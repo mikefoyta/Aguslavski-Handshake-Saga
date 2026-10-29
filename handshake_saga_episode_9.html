@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 9: The Quantum Apocalypse & The Lattice Shield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #04050d;
+      --bg-panel: #0a0e22;
+      --bg-card: #0f1632;
+      --border-glow: #1f2b5c;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #c084fc;
+      --accent-quantum: #a855f7;
+      --accent-lattice: #38bdf8;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(4, 5, 13, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-purple);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(192, 132, 252, 0.15);
+      border: 1px solid var(--accent-purple);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      color: var(--accent-purple);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-btn {
+      background: #0d1527;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .sound-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-red), var(--accent-lattice));
+      box-shadow: 0 0 10px var(--accent-purple);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(192, 132, 252, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-purple);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-purple {
+      color: var(--accent-purple);
+      text-shadow: 0 0 20px rgba(192, 132, 252, 0.6);
+    }
+
+    .comic-title span.neon-red {
+      color: var(--accent-red);
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .comic-title span.neon-lattice {
+      color: var(--accent-lattice);
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(192, 132, 252, 0.12);
+      border: 1px solid var(--accent-purple);
+      color: var(--accent-purple);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #060918;
+      border-left: 4px solid var(--accent-purple);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-purple);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.qbit { border-left: 5px solid var(--accent-red); }
+    .char-card.director { border-left: 5px solid var(--accent-purple); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.qbit .char-avatar {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-card.director .char-avatar {
+      background: rgba(192, 132, 252, 0.12);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE QUANTUM LATTICE SHIELD */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 180vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 75px;
+      background: #060a1c;
+      border: 2px solid var(--accent-purple);
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 0 45px rgba(192, 132, 252, 0.2);
+      min-height: 490px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .quantum-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .crypto-display {
+      background: #02030a;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .crypto-header {
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      color: var(--accent-purple);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glow);
+      padding-bottom: 0.5rem;
+    }
+
+    .crypto-core {
+      text-align: center;
+      padding: 1.25rem;
+      border: 2px dashed rgba(192, 132, 252, 0.4);
+      border-radius: 10px;
+      background: rgba(192, 132, 252, 0.04);
+      margin: 1rem 0;
+      transition: all 0.3s ease;
+    }
+
+    .crypto-title {
+      font-family: var(--comic-font);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+
+    .crypto-meta {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-purple);
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(192, 132, 252, 0.2);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+      box-shadow: 0 0 10px rgba(192, 132, 252, 0.3);
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #03050c;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #091024;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #080d1e;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-purple);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(192, 132, 252, 0.1);
+      border: 1px solid var(--accent-purple);
+      color: var(--accent-purple);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-purple);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .quantum-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 9</span> THE QUANTUM APOCALYPSE &amp; THE LATTICE SHIELD
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" style="background:#0d162e; border:1px solid #1a2a50; color:#94a3b8; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.75rem; font-family:'Fira Code', monospace; text-decoration:none;">⊞ HUB</a>
+      <button class="sound-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE SHATTERED RSA KEY -->
+    <section class="scene-panel" data-stamp="THE CRYPTOGRAPHIC HORIZON // THE SHOR EVENT">
+      <div class="dk-badge">POST-QUANTUM CRYPTOGRAPHY // NIST STANDARDS &amp; SHOR'S ALGORITHM</div>
+      <h1 class="comic-title">THE <span class="neon-purple">QUANTUM SHIFT</span></h1>
+      <p class="scene-lead">
+        The digital sky turns a deep, vibrating ultraviolet. The standard asymmetric locks protecting every bank transaction, password hash, and military clearance in the world begin to sing with harmonic instability. Standing guard before the Root Certificate Vault is Treasury Knight, holding his RSA-2048 and ECC private keys.
+      </p>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">PKI Guardian // RSA-2048 Lock</span></h3>
+          <div class="speech-bubble">
+            "It would take a billion years for the fastest classical supercomputer on Earth to factor this prime modulus. The math is impenetrable... wait. Why is the sky glowing purple?"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card qbit">
+        <div class="char-avatar">Q0</div>
+        <div class="char-meta">
+          <h3>THE Q-BIT <span class="char-role">Quantum Entity // Shor's Algorithm Engine</span></h3>
+          <div class="speech-bubble">
+            "You calculate sequentially. I exist in superposition. I don't guess prime numbers one by one—I calculate every possibility simultaneously. Shor's Algorithm executed. SNAP. Your 2048-bit key is fractured in 3 seconds. The world is naked."
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // THE QUANTUM THREAT</h4>
+        <p>
+          <strong>Shor's Algorithm:</strong> A quantum computing algorithm capable of finding the prime factors of an integer in polynomial time. Once large-scale quantum computers arrive, current public-key cryptography (RSA, Diffie-Hellman, Elliptic Curve) will be instantly broken.<br>
+          <strong>Grover's Algorithm:</strong> Accelerates brute-force attacks on symmetric keys (AES). Mitigation: Double key length from AES-128 to AES-256 for post-quantum resistance.<br>
+          <strong>Harvest Now, Decrypt Later:</strong> Attackers intercepting and archiving encrypted traffic today, waiting for quantum computers to decrypt all historical secrets in the future.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING THE LATTICE-BASED SHIELD -->
+    <div class="scroll-pin-wrapper" id="cryptoTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-purple); color:var(--accent-purple);">
+            SCROLL DOWN OR CLICK STAGES TO DEPLOY PQC
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            THE CRYPTOGRAPHIC WEAPON: <span style="color: var(--accent-lattice);">CRYSTALS-KYBER LATTICE</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel or tap stages. Aguslavski races to the research core, replacing fragile prime-number factoring with multi-dimensional geometric lattices.
+          </p>
+        </div>
+
+        <div class="quantum-grid">
+          <div class="crypto-display">
+            <div class="crypto-header">
+              <span>CIPHER ENGINE // NIST PQC COMPLIANCE</span>
+              <span id="cryptoState" style="color:var(--accent-red);">RSA COMPROMISED</span>
+            </div>
+            <div class="crypto-core" id="cryptoBox">
+              <div class="crypto-title" id="cipherTitle" style="color:var(--accent-red);">RSA-2048 (SHATTERED)</div>
+              <div class="crypto-meta" id="cipherMeta">SHOR'S FACTORIZATION: SUCCESSFUL (3.1s)</div>
+            </div>
+            <div style="font-family:var(--code-font); font-size:0.75rem; color:var(--text-dim);">
+              ALGORITHM: <span id="cipherType" style="color:var(--accent-red); font-weight:700;">INTEGER FACTORIZATION</span> | SHIELD: <span id="shieldStatus" style="color:var(--accent-amber); font-weight:700;">BROKEN</span>
+            </div>
+          </div>
+
+          <div class="stage-narrative" id="cryptoNarrative">
+            <strong>Stage 1/3 (The Fracture):</strong> The Q-Bit shreds standard RSA encryption! Passwords, TLS sessions, and private certificates spill open. Classic math has failed!
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnQ1" onclick="setQuantumStage(1)">[1] Shor's Shatter</button>
+            <button class="stage-btn" id="btnQ2" onclick="setQuantumStage(2)">[2] Weave Lattice Grid</button>
+            <button class="stage-btn" id="btnQ3" onclick="setQuantumStage(3)">[3] Quantum Resistance Locked</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: THE QUANTUM KEY DISTRIBUTION EPILOGUE -->
+    <section class="scene-panel" data-stamp="THE FIBER PIPELINE // QUANTUM KEY DISTRIBUTION">
+      <div class="dk-badge" style="border-color:var(--accent-lattice); color:var(--accent-lattice);">
+        THE FUTURE // QKD &amp; HEISENBERG UNCERTAINTY PRINCIPLE
+      </div>
+      <h2 class="comic-title">THE NEW SHIELD: <span class="neon-lattice">TRUST THE PHYSICS</span></h2>
+      <p class="scene-lead">
+        Aguslavski slams the Lattice Shield onto the vault door. The Q-Bit crashes against the multi-dimensional geometric maze, unable to find a shortcut. The quantum algorithm stalls in an infinite mathematical dead-end!
+      </p>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">Post-Quantum Courier</span></h3>
+          <div class="speech-bubble">
+            "HANDSHAKE COMPLETE! You can calculate prime factors in seconds, Q-Bit, but quantum computers are blind inside high-dimensional vector spaces! Lattice locked!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Quantum Key Distribution (QKD)</span></h3>
+          <div class="speech-bubble">
+            "And down in the fiber channels, we're locking in QKD. We don't just rely on math anymore—we rely on the laws of physics. If an eavesdropper tries to observe a photon on the fiber line, the quantum state collapses instantly and alerts the monitoring console. Perfect forward secrecy."
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-lattice);">
+        <h4>🛡️ POST-QUANTUM CRYPTOGRAPHY (PQC) FLASHCARDS</h4>
+        <p>
+          <strong>Lattice-Based Cryptography (ML-KEM / CRYSTALS-Kyber):</strong> Standardized by NIST. Relies on the hardness of high-dimensional geometric lattice problems (Learning With Errors) that even quantum computers cannot solve efficiently.<br>
+          <strong>Stateful Hash-Based Signatures (SLH-DSA / SPHINCS+):</strong> Quantum-resistant digital signatures based on hash tree mathematics rather than discrete logarithms.<br>
+          <strong>Quantum Key Distribution (QKD):</strong> Uses photon polarization states to exchange cryptographic keys. The Heisenberg Uncertainty Principle guarantees that measurement by a third party alters the photon, revealing the spy.
+        </p>
+      </div>
+    </section>
+
+    <!-- LIVE CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="PQC AUDIT CONSOLE // QUANTUM LAB">
+      <div class="dk-badge">EPISODE 9 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-purple">PQC DIAGNOSTIC TERMINAL</span></h2>
+      <p class="scene-lead">
+        Audit cryptographic key vulnerabilities, benchmark Shor's factorization, or test post-quantum lattice algorithms:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('audit-pki-vulnerabilities')">audit-pki-vulnerabilities</button>
+        <button class="cmd-chip" onclick="runCmd('simulate-shor-attack')">simulate-shor-attack</button>
+        <button class="cmd-chip" onclick="runCmd('deploy-kyber-lattice')">deploy-kyber-lattice</button>
+        <button class="cmd-chip" onclick="runCmd('qkd-photon-telemetry')">qkd-photon-telemetry</button>
+        <button class="cmd-chip" onclick="runCmd('help')">help</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">knight@quantum-vault: ~/pqc-defense</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">Post-Quantum Cryptographic Suite initialized: NIST_PQC_2026_FIPS</div>
+          <div class="log dim">Type 'help' to review quantum defense procedures.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- Next Mission Launch Panel -->
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%); border: 2px solid #10b981; border-radius: 14px; padding: 2rem; text-align: center; margin-top: 3rem; box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);">
+      <div style="font-family: 'Bangers', cursive; font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; letter-spacing: 0.05em;">MISSION 09 ACCOMPLISHED!</div>
+      <p style="color: #94a3b8; font-size: 0.95rem;">Protocol milestones verified. Clearance advanced for the next segment.</p>
+      <a href="handshake_saga_episode_10.html" onclick="saveEpProgress()" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; background: #10b981; color: #000; font-family: 'Fira Code', monospace; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.75rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+        ENGAGE EPISODE 10: THE NEURAL LINK & THE BLACK BOX →
+      </a>
+    </div>
+    
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1140, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    let currentQuantumStage = 1;
+    function setQuantumStage(stage) {
+      currentQuantumStage = stage;
+      const cState = document.getElementById('cryptoState');
+      const cTitle = document.getElementById('cipherTitle');
+      const cMeta = document.getElementById('cipherMeta');
+      const cType = document.getElementById('cipherType');
+      const sStatus = document.getElementById('shieldStatus');
+      const nar = document.getElementById('cryptoNarrative');
+      const cBox = document.getElementById('cryptoBox');
+
+      const b1 = document.getElementById('btnQ1');
+      const b2 = document.getElementById('btnQ2');
+      const b3 = document.getElementById('btnQ3');
+
+      if (b1 && b2 && b3) {
+        b1.classList.remove('active');
+        b2.classList.remove('active');
+        b3.classList.remove('active');
+      }
+
+      if (stage === 1) {
+        b1.classList.add('active');
+        cState.innerText = 'RSA COMPROMISED';
+        cState.style.color = '#ef4444';
+        cTitle.innerText = 'RSA-2048 (SHATTERED)';
+        cTitle.style.color = '#ef4444';
+        cMeta.innerText = "SHOR'S FACTORIZATION: SUCCESSFUL (3.1s)";
+        cType.innerText = 'INTEGER FACTORIZATION';
+        cType.style.color = '#ef4444';
+        sStatus.innerText = 'BROKEN';
+        sStatus.style.color = '#ef4444';
+        cBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        cBox.style.background = 'rgba(239, 68, 68, 0.05)';
+        nar.innerHTML = '<strong>Stage 1/3 (The Fracture):</strong> The Q-Bit shreds standard RSA encryption! Passwords, TLS sessions, and private certificates spill open. Classic math has failed!';
+        playTone(380, 0.1);
+      } else if (stage === 2) {
+        b2.classList.add('active');
+        cState.innerText = 'WEAVING LATTICE MESH';
+        cState.style.color = '#f59e0b';
+        cTitle.innerText = 'MODULE-LWE LATTICE GRID';
+        cTitle.style.color = '#f59e0b';
+        cMeta.innerText = 'HIGH-DIMENSIONAL VECTOR SPACE INJECTION';
+        cType.innerText = 'LEARNING WITH ERRORS';
+        cType.style.color = '#f59e0b';
+        sStatus.innerText = 'COMPUTING RESISTANCE';
+        sStatus.style.color = '#f59e0b';
+        cBox.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+        cBox.style.background = 'rgba(245, 158, 11, 0.05)';
+        nar.innerHTML = '<strong>Stage 2/3 (The Geometric Maze):</strong> Aguslavski deploys Module-Lattice vectors! Quantum superposition cannot shortcut high-dimensional Euclidean lattice shortest vector problems!';
+        playTone(680, 0.1);
+      } else {
+        b3.classList.add('active');
+        cState.innerText = 'POST-QUANTUM RESISTANT';
+        cState.style.color = '#38bdf8';
+        cTitle.innerText = 'ML-KEM-1024 (CRYSTALS-KYBER)';
+        cTitle.style.color = '#38bdf8';
+        cMeta.innerText = 'NIST FIPS 203 STANDARDIZED // ERROR RATE: 0.00%';
+        cType.innerText = 'POST-QUANTUM LATTICE';
+        cType.style.color = '#38bdf8';
+        sStatus.innerText = 'IMPERVIOUS';
+        sStatus.style.color = '#38bdf8';
+        cBox.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+        cBox.style.background = 'rgba(56, 189, 248, 0.05)';
+        nar.innerHTML = '<strong>Stage 3/3 (Quantum Resistance Locked):</strong> HANDSHAKE COMPLETE! The Q-Bit dissolves in frustration against undefined solutions. Global encryption secured against the quantum apocalypse!';
+        playTone(1080, 0.15);
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / (docHeight > 0 ? docHeight : 1)) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin Quantum
+      const trigger = document.getElementById('cryptoTrigger');
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const triggerHeight = trigger.offsetHeight;
+      const viewH = window.innerHeight;
+
+      if (rect.top <= 100 && rect.bottom >= 150) {
+        const scrolled = Math.max(0, 100 - rect.top);
+        const maxScroll = Math.max(1, triggerHeight - viewH * 0.7);
+        const p = Math.min(1, Math.max(0, scrolled / maxScroll));
+
+        if (p < 0.33 && currentQuantumStage !== 1) {
+          setQuantumStage(1);
+        } else if (p >= 0.33 && p < 0.68 && currentQuantumStage !== 2) {
+          setQuantumStage(2);
+        } else if (p >= 0.68 && currentQuantumStage !== 3) {
+          setQuantumStage(3);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(580, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-purple);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'audit-pki-vulnerabilities') {
+        res.innerHTML = `
+          [CLASSICAL PKI THREAT PROFILE]<br>
+          * RSA-2048 / RSA-4096: VULNERABLE to Shor's Algorithm.<br>
+          * ECDSA (Elliptic Curve): VULNERABLE to Quantum Factorization.<br>
+          * Diffie-Hellman Key Exchange: VULNERABLE to Quantum Discrete Log.<br>
+          * AES-256 Symmetric: SECURE (Grover's reduces effective security to 128-bit).
+        `;
+      } else if (low === 'simulate-shor-attack') {
+        res.innerHTML = `
+          <span style="color:var(--accent-red);">[SIMULATING SHOR FACTORIZATION ON RSA-2048]</span><br>
+          * Modulus N = p * q (617 decimal digits)<br>
+          * Quantum Phase Estimation: Period r found in O((log N)^3) operations.<br>
+          * Result: Private Key extracted in 3.12 seconds. RSA SHATTERED.
+        `;
+      } else if (low === 'deploy-kyber-lattice') {
+        res.innerHTML = `
+          [PQC UPGRADE ENGAGED: ML-KEM-1024 / KYBER]<br>
+          * Mathematical Basis: Learning With Errors over Module Lattices (M-LWE).<br>
+          * Public Key Size: 1,568 bytes | Ciphertext: 1,568 bytes.<br>
+          <span style="color:var(--accent-lattice);">* Quantum Security Level: 5 (Impervious to Classical &amp; Quantum Attacks).</span>
+        `;
+      } else if (low === 'qkd-photon-telemetry') {
+        res.innerHTML = `
+          [QUANTUM KEY DISTRIBUTION (QKD) LINK STATUS]<br>
+          * Protocol: BB84 Optical Fiber Transmission<br>
+          * Quantum Bit Error Rate (QBER): 1.4% (Threshold: 11%)<br>
+          * Eavesdropping Status: NONE DETECTED (Photon wave function intact).
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 9 diagnostics:<br>
+          - <code>audit-pki-vulnerabilities</code>: Audit classical encryption weaknesses<br>
+          - <code>simulate-shor-attack</code>: Execute Shor's quantum factoring simulation<br>
+          - <code>deploy-kyber-lattice</code>: Deploy NIST-standardized Post-Quantum Lattice<br>
+          - <code>qkd-photon-telemetry</code>: Inspect Quantum Key Distribution fiber states<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  
+    function saveEpProgress() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(9)) {
+          list.push(9);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+    
+  </script>
+</body>
+</html>

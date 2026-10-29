@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 10: The Neural Link & The Black Box</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #030409;
+      --bg-panel: #070c1a;
+      --bg-card: #0d152a;
+      --border-glow: #1a294d;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-fire: #ff4500;
+      --accent-neon-blue: #38bdf8;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(3, 4, 9, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-fire);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(255, 69, 0, 0.15);
+      border: 1px solid var(--accent-fire);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      color: var(--accent-fire);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-btn {
+      background: #0d1527;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .sound-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-fire), var(--accent-amber), var(--accent-cyan));
+      box-shadow: 0 0 10px var(--accent-fire);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(255, 69, 0, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-fire);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-fire {
+      color: var(--accent-fire);
+      text-shadow: 0 0 20px rgba(255, 69, 0, 0.6);
+    }
+
+    .comic-title span.neon-cyan {
+      color: var(--accent-cyan);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 69, 0, 0.12);
+      border: 1px solid var(--accent-fire);
+      color: var(--accent-fire);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #050814;
+      border-left: 4px solid var(--accent-fire);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-fire);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.gpu { border-left: 5px solid var(--accent-fire); }
+    .char-card.whisperer { border-left: 5px solid var(--accent-purple); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.gpu .char-avatar {
+      background: rgba(255, 69, 0, 0.12);
+      border-color: var(--accent-fire);
+      color: var(--accent-fire);
+    }
+
+    .char-card.whisperer .char-avatar {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE NEURAL LINK & RDMA MAGLEV */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 180vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 75px;
+      background: #050918;
+      border: 2px solid var(--accent-fire);
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 0 45px rgba(255, 69, 0, 0.2);
+      min-height: 490px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .neural-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .hpc-display {
+      background: #020309;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hpc-header {
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      color: var(--accent-fire);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glow);
+      padding-bottom: 0.5rem;
+    }
+
+    .hpc-core {
+      text-align: center;
+      padding: 1.25rem;
+      border: 2px dashed rgba(255, 69, 0, 0.4);
+      border-radius: 10px;
+      background: rgba(255, 69, 0, 0.04);
+      margin: 1rem 0;
+      transition: all 0.3s ease;
+    }
+
+    .hpc-title {
+      font-family: var(--comic-font);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+
+    .hpc-meta {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-fire);
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(255, 69, 0, 0.2);
+      border-color: var(--accent-fire);
+      color: var(--accent-fire);
+      box-shadow: 0 0 10px rgba(255, 69, 0, 0.3);
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #03050c;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #091024;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #080d1e;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-fire);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(255, 69, 0, 0.1);
+      border: 1px solid var(--accent-fire);
+      color: var(--accent-fire);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-fire);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .neural-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 10</span> THE NEURAL LINK &amp; THE BLACK BOX
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" style="background:#0d162e; border:1px solid #1a2a50; color:#94a3b8; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.75rem; font-family:'Fira Code', monospace; text-decoration:none;">⊞ HUB</a>
+      <button class="sound-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE HUNGRY BEAST (THE GPU CLUSTER) -->
+    <section class="scene-panel" data-stamp="HPC SUPERCOMPUTE CLUSTER // 400G INFINIBAND FABRIC">
+      <div class="dk-badge">AI INFRASTRUCTURE // HIGH PERFORMANCE COMPUTING (HPC) &amp; LATENCY</div>
+      <h1 class="comic-title">THE <span class="neon-fire">HUNGRY BEAST</span></h1>
+      <p class="scene-lead">
+        Aguslavski enters a hyper-cooled hangar vibrating with industrial turbine roar. Towering over the racks is THE GPU—a monolithic giant radiating 700 watts of raw compute heat, devouring trillions of model parameter matrices per epoch. Standard TCP handshakes are far too slow; any millisecond of network latency starves the processor into idle thermal waste.
+      </p>
+
+      <div class="char-card gpu">
+        <div class="char-avatar">GPU</div>
+        <div class="char-meta">
+          <h3>THE GPU CLUSTER <span class="char-role">Tensor Core Engine // 400W Compute Node</span></h3>
+          <div class="speech-bubble">
+            "FEED ME PARAMETERS, PACKET! I don't have time for your three-way handshakes, CPU interrupts, or packet acknowledgements! If the network pipeline lags by 5 microseconds, 10,000 cores sit starved! Drop the OS stack and hit the InfiniBand maglev rail!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">RDMA Synapse Courier</span></h3>
+          <div class="speech-bubble">
+            "We're bypassing the host operating system kernel entirely! Remote Direct Memory Access (RDMA) engaged—writing directly into GPU High Bandwidth Memory (HBM3) across the InfiniBand fabric!"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // AI &amp; HPC NETWORKING</h4>
+        <p>
+          <strong>RDMA (Remote Direct Memory Access):</strong> Allows network adapters (NICs) to transfer data directly into GPU/CPU memory across machines without involving the host OS or CPU interrupts, slashing latency from milliseconds to sub-microseconds.<br>
+          <strong>InfiniBand vs RoCE:</strong> High-bandwidth, lossless fabric tailored for AI clusters (InfiniBand native, or RoCE: RDMA over Converged Ethernet).<br>
+          <strong>GPU Starvation:</strong> When network bandwidth or latency bottlenecks prevent training batches from reaching Tensor cores in time, wasting costly enterprise GPU compute cycles.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING THE RDMA HIGHWAY & BLACK BOX -->
+    <div class="scroll-pin-wrapper" id="neuralTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-fire); color:var(--accent-fire);">
+            SCROLL DOWN OR CLICK STAGES TO TRAIN &amp; AUDIT
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            THE NEURAL FABRIC: <span style="color: var(--accent-fire);">RDMA INGESTION &amp; XAI HEATMAP</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel or tap stages. Aguslavski streams training tensors across the fabric until an adversarial data poisoning anomaly enters the hidden layers.
+          </p>
+        </div>
+
+        <div class="neural-grid">
+          <div class="hpc-display">
+            <div class="hpc-header">
+              <span>HPC NETWORK FABRIC // TENSOR INGESTION</span>
+              <span id="hpcState" style="color:var(--accent-fire);">RDMA ACTIVE (400 Gbps)</span>
+            </div>
+            <div class="hpc-core" id="hpcBox">
+              <div class="hpc-title" id="hpcTitle" style="color:var(--accent-fire);">RDMA ZERO-COPY STREAM</div>
+              <div class="hpc-meta" id="hpcMeta">FABRIC: INFINIBAND NDR // LATENCY: 0.8 microseconds</div>
+            </div>
+            <div style="font-family:var(--code-font); font-size:0.75rem; color:var(--text-dim);">
+              LOGIC MODE: <span id="logicMode" style="color:var(--accent-fire); font-weight:700;">DIRECT MEMORY WRITE</span> | INFERENCE: <span id="inferStatus" style="color:var(--accent-green); font-weight:700;">ACCELERATING</span>
+            </div>
+          </div>
+
+          <div class="stage-narrative" id="neuralNarrative">
+            <strong>Stage 1/3 (The Maglev Pipeline):</strong> Aguslavski bypasses the CPU entirely, streaming gigabytes of parameter shards straight into VRAM at 400 Gigabits per second! The GPU devours data without dropping a single cycle!
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnN1" onclick="setNeuralStage(1)">[1] 400G RDMA Stream</button>
+            <button class="stage-btn" id="btnN2" onclick="setNeuralStage(2)">[2] The Black Box Bias</button>
+            <button class="stage-btn" id="btnN3" onclick="setNeuralStage(3)">[3] XAI Saliency Audit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: THE WHISPERER & THE EXPLAINABLE AI REVEAL -->
+    <section class="scene-panel" data-stamp="INSPECTION LAB // EXPLAINABLE AI (XAI)">
+      <div class="dk-badge" style="border-color:var(--accent-purple); color:var(--accent-purple);">
+        AI GOVERNANCE // MODEL BIAS, OVERFITTING &amp; SALIENCY MAPS
+      </div>
+      <h2 class="comic-title">THE GHOST IN THE MATH: <span class="neon-fire">ENTER THE WHISPERER</span></h2>
+      <p class="scene-lead">
+        The output layer spits out a critical anomaly: A loan applicant with a spotless financial record and zero debt is abruptly flagged "REJECTED". Treasury Knight demands an audit trail, but the GPU shrugs: <em>"The matrix math said No."</em> A figure steps out of the hidden layers holding a saliency lantern—THE WHISPERER.
+      </p>
+
+      <div class="char-card whisperer">
+        <div class="char-avatar">XAI</div>
+        <div class="char-meta">
+          <h3>THE WHISPERER <span class="char-role">Explainable AI (XAI) // Model Auditor</span></h3>
+          <div class="speech-bubble">
+            "You cannot audit black-box weights with classical rulebooks, Knight. Deep learning doesn't think in logic—it correlates high-dimensional features. Look at my saliency heatmap: The model didn't reject the loan because of salary or debt. It gave 90% weight to the application font because bad historical debtors happened to submit PDFs in Comic Sans. The AI is overfitting on statistical noise!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Compliance &amp; Algorithmic Assurance</span></h3>
+          <div class="speech-bubble">
+            "Drop the font feature immediately. Normalize the training dataset, enforce algorithmic fairness, and log the decision weights into the immutable compliance ledger. Artificial Intelligence without explainability is an unmitigated liability."
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-purple);">
+        <h4>🛡️ AI &amp; CYBER AUDITING FLASHCARDS</h4>
+        <p>
+          <strong>Black Box Problem:</strong> Deep neural networks contain millions of parameters and hidden layers, making it mathematically opaque to trace why a specific inference was made.<br>
+          <strong>Explainable AI (XAI):</strong> Techniques such as SHAP (Shapley Additive exPlanations) and Saliency Maps that reveal which specific input features influenced the AI's final prediction.<br>
+          <strong>Overfitting &amp; Bias:</strong> When a machine learning model memorizes spurious coincidences in training data (like font choices or irrelevant background pixels) rather than genuine underlying patterns.
+        </p>
+      </div>
+    </section>
+
+    <!-- LIVE CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="HPC &amp; AI CLUSTER CONSOLE // TELEMETRY TERMINAL">
+      <div class="dk-badge">EPISODE 10 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-fire">NEURAL CLUSTER CONSOLE</span></h2>
+      <p class="scene-lead">
+        Monitor RDMA InfiniBand throughput, inspect GPU memory utilization, or run an XAI saliency map audit:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('infiniband-perf')">infiniband-perf</button>
+        <button class="cmd-chip" onclick="runCmd('gpu-telemetry')">gpu-telemetry</button>
+        <button class="cmd-chip" onclick="runCmd('audit-black-box')">audit-black-box</button>
+        <button class="cmd-chip" onclick="runCmd('xai-saliency-map')">xai-saliency-map</button>
+        <button class="cmd-chip" onclick="runCmd('help')">help</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">whisperer@hpc-cluster: ~/ai-governance</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">HPC AI Training Fabric initialized: CLUSTER_TENSOR_400G_V10</div>
+          <div class="log dim">Type 'help' to review AI cluster diagnostics.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- Next Mission Launch Panel -->
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%); border: 2px solid #10b981; border-radius: 14px; padding: 2rem; text-align: center; margin-top: 3rem; box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);">
+      <div style="font-family: 'Bangers', cursive; font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; letter-spacing: 0.05em;">MISSION 010 ACCOMPLISHED!</div>
+      <p style="color: #94a3b8; font-size: 0.95rem;">Protocol milestones verified. Clearance advanced for the next segment.</p>
+      <a href="handshake_saga_episode_11.html" onclick="saveEpProgress()" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; background: #10b981; color: #000; font-family: 'Fira Code', monospace; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.75rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+        ENGAGE EPISODE 11: THE WORLD WIDE WIRE TOUR (GRAND FINALE) →
+      </a>
+    </div>
+    
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1180, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    let currentNeuralStage = 1;
+    function setNeuralStage(stage) {
+      currentNeuralStage = stage;
+      const hState = document.getElementById('hpcState');
+      const hTitle = document.getElementById('hpcTitle');
+      const hMeta = document.getElementById('hpcMeta');
+      const lMode = document.getElementById('logicMode');
+      const iStatus = document.getElementById('inferStatus');
+      const nar = document.getElementById('neuralNarrative');
+      const hBox = document.getElementById('hpcBox');
+
+      const b1 = document.getElementById('btnN1');
+      const b2 = document.getElementById('btnN2');
+      const b3 = document.getElementById('btnN3');
+
+      b1.classList.remove('active');
+      b2.classList.remove('active');
+      b3.classList.remove('active');
+
+      if (stage === 1) {
+        b1.classList.add('active');
+        hState.innerText = 'RDMA ACTIVE (400 Gbps)';
+        hState.style.color = '#ff4500';
+        hTitle.innerText = 'RDMA ZERO-COPY STREAM';
+        hTitle.style.color = '#ff4500';
+        hMeta.innerText = 'FABRIC: INFINIBAND NDR // LATENCY: 0.8 microseconds';
+        lMode.innerText = 'DIRECT MEMORY WRITE';
+        lMode.style.color = '#ff4500';
+        iStatus.innerText = 'ACCELERATING';
+        iStatus.style.color = '#10b981';
+        hBox.style.borderColor = 'rgba(255, 69, 0, 0.4)';
+        hBox.style.background = 'rgba(255, 69, 0, 0.05)';
+        nar.innerHTML = '<strong>Stage 1/3 (The Maglev Pipeline):</strong> Aguslavski bypasses the CPU entirely, streaming gigabytes of parameter shards straight into VRAM at 400 Gigabits per second! The GPU devours data without dropping a single cycle!';
+        playTone(520, 0.08);
+      } else if (stage === 2) {
+        b2.classList.add('active');
+        hState.innerText = 'ANOMALY DETECTED // BLACK BOX BIAS';
+        hState.style.color = '#ef4444';
+        hTitle.innerText = 'OVERFITTING REJECTION';
+        hTitle.style.color = '#ef4444';
+        hMeta.innerText = 'INFERENCE: LOAN DENIED // CAUSE: OPAQUE WEIGHTS';
+        lMode.innerText = 'BLACK BOX HEURISTIC';
+        lMode.style.color = '#ef4444';
+        iStatus.innerText = 'BIAS SUSPECTED';
+        iStatus.style.color = '#ef4444';
+        hBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        hBox.style.background = 'rgba(239, 68, 68, 0.05)';
+        nar.innerHTML = '<strong>Stage 2/3 (The Black Box):</strong> An applicant is denied despite having clean financials! The GPU can only cite high-dimensional matrix output. Treasury Knight calls for an Explainable AI audit.';
+        playTone(360, 0.1);
+      } else {
+        b3.classList.add('active');
+        hState.innerText = 'AUDITED // XAI SALIENCY MAP APPLIED';
+        hState.style.color = '#a855f7';
+        hTitle.innerText = 'EXPLAINABLE AI DEPLOYED';
+        hTitle.style.color = '#a855f7';
+        hMeta.innerText = 'SALIENCY MAP: FONT BIAS PURGED // VERDICT: APPROVED';
+        lMode.innerText = 'TRANSPARENT WEIGHT MATRIX';
+        lMode.style.color = '#a855f7';
+        iStatus.innerText = 'FAIR & COMPLIANT';
+        iStatus.style.color = '#10b981';
+        hBox.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+        hBox.style.background = 'rgba(168, 85, 247, 0.05)';
+        nar.innerHTML = '<strong>Stage 3/3 (The Saliency Audit):</strong> The Whisperer shines the XAI heat map! The irrelevant Comic Sans font bias is pruned from the model parameters. The application is approved with an immutable audit log!';
+        playTone(960, 0.12);
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin Neural
+      const trigger = document.getElementById('neuralTrigger');
+      const rect = trigger.getBoundingClientRect();
+      const total = trigger.offsetHeight - window.innerHeight;
+
+      if (rect.top <= 80 && rect.bottom >= window.innerHeight * 0.5) {
+        const scrolledDistance = Math.max(0, 80 - rect.top);
+        const p = Math.min(1, scrolledDistance / (total > 0 ? total : 1));
+
+        if (p < 0.35 && currentNeuralStage !== 1) {
+          setNeuralStage(1);
+        } else if (p >= 0.35 && p < 0.70 && currentNeuralStage !== 2) {
+          setNeuralStage(2);
+        } else if (p >= 0.70 && currentNeuralStage !== 3) {
+          setNeuralStage(3);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(560, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-fire);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'infiniband-perf') {
+        res.innerHTML = `
+          [INFINIBAND FABRIC DIAGNOSTICS]<br>
+          * Link Speed: 400 Gbps (NDR InfiniBand 4x)<br>
+          * Packet Drop Rate: 0.00% (Lossless Credit-Based Flow Control)<br>
+          * RDMA Zero-Copy Latency: 0.82 microseconds<br>
+          <span style="color:var(--accent-green);">* Status: OPTIMAL (Zero GPU Starvation)</span>
+        `;
+      } else if (low === 'gpu-telemetry') {
+        res.innerHTML = `
+          [NVIDIA/AMD TENSOR CORE TELEMETRY]<br>
+          * Compute Utilization: 98.4%<br>
+          * Power Consumption: 412W per socket (Hot aisle exhaust: 38.2°C)<br>
+          * HBM3 Memory Bandwidth: 3.2 TB/sec (Model Shard Ingested)
+        `;
+      } else if (low === 'audit-black-box') {
+        res.innerHTML = `
+          <span style="color:var(--accent-red);">[BLACK BOX INFERENCE AUDIT]</span><br>
+          * Subject: Loan Decision #84920<br>
+          * Hidden Layers: 32 Dense Transformer Blocks<br>
+          * Result: DENIED (Confidence: 94.2%)<br>
+          * Interpretability: OPAQUE (XAI Saliency required to isolate contributing features).
+        `;
+      } else if (low === 'xai-saliency-map') {
+        res.innerHTML = `
+          [EXPLAINABLE AI (XAI) SHAP/SALIENCY BREAKDOWN]<br>
+          * Feature: Applicant Income &rarr; Weight: +2.1%<br>
+          * Feature: Debt-to-Income &rarr; Weight: +1.4%<br>
+          <span style="color:var(--accent-red);">* Feature: PDF Document Font (Comic Sans) &rarr; Weight: -89.5% [OVERFITTING ANOMALY]</span><br>
+          <span style="color:var(--accent-green);">* Action: Font feature pruned. Decision re-evaluated: APPROVED.</span>
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 10 diagnostics:<br>
+          - <code>infiniband-perf</code>: Verify 400G RDMA lossless network performance<br>
+          - <code>gpu-telemetry</code>: Inspect tensor compute workload &amp; memory bandwidth<br>
+          - <code>audit-black-box</code>: Examine opaque neural network inference outputs<br>
+          - <code>xai-saliency-map</code>: Run SHAP/Saliency analysis to expose feature bias<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  
+    function saveEpProgress() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(10)) {
+          list.push(10);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+    
+  </script>
+</body>
+</html>

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 8: The Evil Twin & The Augmented Reality Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #04060e;
+      --bg-panel: #0a0f1e;
+      --bg-card: #0f162c;
+      --border-glow: #1a294d;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-neon-green: #22c55e;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(4, 6, 14, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-neon-green);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid var(--accent-neon-green);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      color: var(--accent-neon-green);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-btn {
+      background: #0d1527;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .sound-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-amber), var(--accent-red), var(--accent-neon-green));
+      box-shadow: 0 0 10px var(--accent-neon-green);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-neon-green);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-green {
+      color: var(--accent-neon-green);
+      text-shadow: 0 0 20px rgba(34, 197, 94, 0.6);
+    }
+
+    .comic-title span.neon-red {
+      color: var(--accent-red);
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid var(--accent-neon-green);
+      color: var(--accent-neon-green);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #050a16;
+      border-left: 4px solid var(--accent-neon-green);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-neon-green);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.injector { border-left: 5px solid var(--accent-red); }
+    .char-card.hud { border-left: 5px solid var(--accent-neon-green); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.hud .char-avatar {
+      background: rgba(34, 197, 94, 0.12);
+      border-color: var(--accent-neon-green);
+      color: var(--accent-neon-green);
+    }
+
+    .char-card.injector .char-avatar {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE AR WIREFRAME OVERLAY */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 180vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 75px;
+      background: #050a16;
+      border: 2px solid var(--accent-neon-green);
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 0 45px rgba(34, 197, 94, 0.2);
+      min-height: 490px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .ar-hud-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .hud-display {
+      background: #02040b;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hud-header {
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      color: var(--accent-neon-green);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glow);
+      padding-bottom: 0.5rem;
+    }
+
+    .ar-viewfinder {
+      text-align: center;
+      padding: 1.25rem;
+      border: 2px dashed rgba(34, 197, 94, 0.4);
+      border-radius: 10px;
+      background: rgba(34, 197, 94, 0.04);
+      margin: 1rem 0;
+      transition: all 0.3s ease;
+    }
+
+    .view-title {
+      font-family: var(--comic-font);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+
+    .view-meta {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-neon-green);
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: var(--accent-neon-green);
+      color: var(--accent-neon-green);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #03050c;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #091024;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #080d1e;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-neon-green);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid var(--accent-neon-green);
+      color: var(--accent-neon-green);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-neon-green);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .ar-hud-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 8</span> THE EVIL TWIN &amp; THE AR WIREFRAME
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" style="background:#0d162e; border:1px solid #1a2a50; color:#94a3b8; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.75rem; font-family:'Fira Code', monospace; text-decoration:none;">⊞ HUB</a>
+      <button class="sound-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE NEON TRAP -->
+    <section class="scene-panel" data-stamp="WIRELESS 802.11 // THE ROGUE ACCESS POINT">
+      <div class="dk-badge">SECURITY+ &amp; NETWORK+ // WIRELESS ATTACKS &amp; SOCIAL ENGINEERING</div>
+      <h1 class="comic-title">THE <span class="neon-red">EVIL TWIN</span> PROTOCOL</h1>
+      <p class="scene-lead">
+        Containerized Aguslavski descends into the wireless spectrum, beaming into a pair of smart Augmented Reality glasses worn by an unsuspecting user on a neon-lit cyberpunk street. A glowing green beacon signals in the user's HUD: <em>"FREE HIGH-SPEED WI-FI — COFFEE_SECURE_NODE"</em>. The user connects automatically because the signal strength is overwhelming.
+      </p>
+
+      <div class="char-card injector">
+        <div class="char-avatar">ET</div>
+        <div class="char-meta">
+          <h3>THE INJECTOR <span class="char-role">Rogue AP Operator // Man-in-the-Middle</span></h3>
+          <div class="speech-bubble">
+            "Hook, line, and sinker. I cloned the SSID and broadcast at 100mW. In the real world, my antenna is taped to a rusty van, but their AR display thinks it's a 5-star cafe! Let's inject a fake credential harvesting prompt!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">AR Interface Guide // HUD Core</span></h3>
+          <div class="speech-bubble">
+            "Wait... the BSSID MAC address doesn't match the enterprise certificate! The user is about to type their master password into a floating phishing prompt! I can't block their fingers—I have to strip away the illusion!"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // WIRELESS THREATS</h4>
+        <p>
+          <strong>Evil Twin (Rogue AP):</strong> An unauthorized Wi-Fi access point that mimics the SSID, MAC address, and captive portal of a trusted network with higher transmission power to intercept traffic.<br>
+          <strong>Credential Harvesting:</strong> Deceptive prompts designed to capture administrative logins, 2FA tokens, or credit cards before passing users through to the real internet.<br>
+          <strong>802.11 Safe Mode / Sandboxing:</strong> Isolating untrusted wireless traffic into a restricted quarantine VLAN without routing privileges to production assets.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING THE WIREFRAME SAFE MODE -->
+    <div class="scroll-pin-wrapper" id="arTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-neon-green); color:var(--accent-neon-green);">
+            SCROLL DOWN OR CLICK STAGES TO STRIP CSS
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            THE AR INTERFACE: <span style="color: var(--accent-neon-green);">STRIP THE STYLE SHEETS</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel or tap stages. Aguslavski forces Safe Mode—stripping away visual CSS styling to reveal the raw underlying code of the attacker's trap.
+          </p>
+        </div>
+
+        <div class="ar-hud-grid">
+          <div class="hud-display">
+            <div class="hud-header">
+              <span>AR OPTICAL HUD // TELEMETRY FEED</span>
+              <span id="hudState" style="color:var(--accent-red);">PERCEPTION COMPROMISED</span>
+            </div>
+            <div class="ar-viewfinder" id="arBox">
+              <div class="view-title" id="viewTitle" style="color:var(--accent-red);">STARBUCKS OFFICIAL WI-FI</div>
+              <div class="view-meta" id="viewMeta">SSID: COFFEE_SECURE_NODE // RSSI: -38 dBm (SPOOFED)</div>
+            </div>
+            <div style="font-family:var(--code-font); font-size:0.75rem; color:var(--text-dim);">
+              RENDER ENGINE: <span id="renderMode" style="color:var(--accent-red); font-weight:700;">GLOSSY CSS (TRAP ACTIVE)</span> | BSSID: <span id="bssidMeta" style="color:var(--accent-amber); font-weight:700;">ROGUE CLONE</span>
+            </div>
+          </div>
+
+          <div class="stage-narrative" id="arNarrative">
+            <strong>Stage 1/3 (The Illusion):</strong> The user sees a glamorous corporate cafe portal floating in their AR glasses with a glowing "Enter Password to Upgrade Firmware" button. Social engineering at its finest!
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnA1" onclick="setArStage(1)">[1] Deceptive AR Overlay</button>
+            <button class="stage-btn" id="btnA2" onclick="setArStage(2)">[2] Safe Mode Wireframe</button>
+            <button class="stage-btn" id="btnA3" onclick="setArStage(3)">[3] OTA Security Patch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: TREASURY KNIGHT OTA INTERCEPTION -->
+    <section class="scene-panel" data-stamp="ENDPOINT SECURITY // OVER-THE-AIR PATCH">
+      <div class="dk-badge" style="border-color:var(--accent-green); color:var(--accent-green);">
+        DOMAIN 5.0 // OTA FIRMWARE UPDATES &amp; WPA3 DEFENSE
+      </div>
+      <h2 class="comic-title">THE HAZMAT DROP &amp; <span class="neon-green">WPA3-ENTERPRISE</span></h2>
+      <p class="scene-lead">
+        A progress bar appears in the AR sky: <em>"FIRMWARE UPDATE DOWNLOADING..."</em>. Treasury Knight drops in over-the-air wearing digital hazmat gear. He forces a cryptographic certificate validation handshake that severs the rogue access point on the spot.
+      </p>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">OTA Patch Delivery // Endpoint Armor</span></h3>
+          <div class="speech-bubble">
+            "Over-the-Air signature pushed! WPA3-Enterprise mandatory. Protected Management Frames (PMF) engaged. That fake cafe van just lost its Deauth attack ability. Rogue AP terminated and MAC blacklisted across all edge controllers!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">HUD Restored</span></h3>
+          <div class="speech-bubble">
+            "The cardboard sign looks like a cardboard sign again. Phishing prompt deleted. The user pulled their hand back just in time!"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-neon-green);">
+        <h4>🛡️ SECURITY+ WIRELESS ENCRYPTION STANDARDS</h4>
+        <p>
+          <strong>WPA2 vs WPA3:</strong> WPA2 was vulnerable to offline dictionary attacks via the 4-way handshake. WPA3 uses <strong>Simultaneous Authentication of Equals (SAE)</strong> to prevent offline cracking even with weak passwords.<br>
+          <strong>Protected Management Frames (802.11w):</strong> Cryptographically protects Wi-Fi management frames, preventing attackers from launching <em>Deauthentication (Deauth)</em> disconnect attacks.<br>
+          <strong>Wireless Intrusion Prevention System (WIPS):</strong> Continuously monitors radio frequencies for rogue APs and rogue SSIDs, automatically suppressing them.
+        </p>
+      </div>
+    </section>
+
+    <!-- LIVE CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="WIRELESS FORENSICS // 802.11 CONSOLE">
+      <div class="dk-badge">EPISODE 8 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-green">WIRELESS AUDIT CONSOLE</span></h2>
+      <p class="scene-lead">
+        Audit nearby BSSIDs, identify Evil Twin rogue access points, or enforce WPA3-Enterprise configurations:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('scan-wifi-bssid')">scan-wifi-bssid</button>
+        <button class="cmd-chip" onclick="runCmd('audit-evil-twin')">audit-evil-twin</button>
+        <button class="cmd-chip" onclick="runCmd('enforce-wpa3')">enforce-wpa3</button>
+        <button class="cmd-chip" onclick="runCmd('deauth-suppression')">deauth-suppression</button>
+        <button class="cmd-chip" onclick="runCmd('help')">help</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">knight@wips-defense: ~/wireless-audit</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">Wireless Intrusion Prevention System initialized: 802.11ax_SENSOR_08</div>
+          <div class="log dim">Type 'help' to review wireless incident response tools.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- Next Mission Launch Panel -->
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%); border: 2px solid #10b981; border-radius: 14px; padding: 2rem; text-align: center; margin-top: 3rem; box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);">
+      <div style="font-family: 'Bangers', cursive; font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; letter-spacing: 0.05em;">MISSION 08 ACCOMPLISHED!</div>
+      <p style="color: #94a3b8; font-size: 0.95rem;">Protocol milestones verified. Clearance advanced for the next segment.</p>
+      <a href="handshake_saga_episode_9.html" onclick="saveEpProgress()" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; background: #10b981; color: #000; font-family: 'Fira Code', monospace; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.75rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+        ENGAGE EPISODE 9: THE QUANTUM APOCALYPSE & THE LATTICE SHIELD →
+      </a>
+    </div>
+    
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1020, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    let currentArStage = 1;
+    function setArStage(stage) {
+      currentArStage = stage;
+      const hState = document.getElementById('hudState');
+      const vTitle = document.getElementById('viewTitle');
+      const vMeta = document.getElementById('viewMeta');
+      const rMode = document.getElementById('renderMode');
+      const bMeta = document.getElementById('bssidMeta');
+      const nar = document.getElementById('arNarrative');
+      const arBox = document.getElementById('arBox');
+
+      const b1 = document.getElementById('btnA1');
+      const b2 = document.getElementById('btnA2');
+      const b3 = document.getElementById('btnA3');
+
+      b1.classList.remove('active');
+      b2.classList.remove('active');
+      b3.classList.remove('active');
+
+      if (stage === 1) {
+        b1.classList.add('active');
+        hState.innerText = 'PERCEPTION COMPROMISED';
+        hState.style.color = '#ef4444';
+        vTitle.innerText = 'STARBUCKS OFFICIAL WI-FI';
+        vTitle.style.color = '#ef4444';
+        vMeta.innerText = 'SSID: COFFEE_SECURE_NODE // RSSI: -38 dBm (SPOOFED)';
+        rMode.innerText = 'GLOSSY CSS (TRAP ACTIVE)';
+        rMode.style.color = '#ef4444';
+        bMeta.innerText = 'ROGUE CLONE';
+        bMeta.style.color = '#ef4444';
+        arBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        arBox.style.background = 'rgba(239, 68, 68, 0.05)';
+        nar.innerHTML = '<strong>Stage 1/3 (The Illusion):</strong> The user sees a glamorous corporate cafe portal floating in their AR glasses with a glowing "Enter Password to Upgrade Firmware" button. Social engineering at its finest!';
+        playTone(420, 0.08);
+      } else if (stage === 2) {
+        b2.classList.add('active');
+        hState.innerText = 'SAFE MODE ACTIVATED // CSS REMOVED';
+        hState.style.color = '#f59e0b';
+        vTitle.innerText = '[RAW CODE] CARDBOARD BOX & LAPTOP';
+        vTitle.style.color = '#f59e0b';
+        vMeta.innerText = 'TARGET: HACKER IN HOODIE // MAC: DE:AD:BE:EF:00:01';
+        rMode.innerText = 'BLACK & WHITE WIREFRAME';
+        rMode.style.color = '#f59e0b';
+        bMeta.innerText = 'ROGUE AP IDENTIFIED';
+        bMeta.style.color = '#f59e0b';
+        arBox.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+        arBox.style.background = 'rgba(245, 158, 11, 0.05)';
+        nar.innerHTML = '<strong>Stage 2/3 (The Truth Revealed):</strong> Aguslavski strips the styling! The fake cafe portal dissolves into raw wireframe: A cardboard box taped to a van, broadcasting an unencrypted credential harvesting trap!';
+        playTone(720, 0.08);
+      } else {
+        b3.classList.add('active');
+        hState.innerText = 'THREAT ELIMINATED // WPA3 SECURE';
+        hState.style.color = '#22c55e';
+        vTitle.innerText = 'WPA3-ENTERPRISE LOCKED';
+        vTitle.style.color = '#22c55e';
+        vMeta.innerText = '802.1X EAP-TLS CERTIFICATE VALIDATED';
+        rMode.innerText = 'SECURE RENDERING';
+        rMode.style.color = '#22c55e';
+        bMeta.innerText = 'AUTHENTIC ACCESS POINT';
+        bMeta.style.color = '#22c55e';
+        arBox.style.borderColor = 'rgba(34, 197, 94, 0.4)';
+        arBox.style.background = 'rgba(34, 197, 94, 0.05)';
+        nar.innerHTML = '<strong>Stage 3/3 (OTA Resolution):</strong> Treasury Knight injects an Over-the-Air patch! WPA3 encryption forces mutual cryptographic verification. The rogue signal is blacklisted and the trap is disarmed!';
+        playTone(980, 0.12);
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin AR
+      const trigger = document.getElementById('arTrigger');
+      const rect = trigger.getBoundingClientRect();
+      const total = trigger.offsetHeight - window.innerHeight;
+
+      if (rect.top <= 80 && rect.bottom >= window.innerHeight * 0.5) {
+        const scrolledDistance = Math.max(0, 80 - rect.top);
+        const p = Math.min(1, scrolledDistance / (total > 0 ? total : 1));
+
+        if (p < 0.35 && currentArStage !== 1) {
+          setArStage(1);
+        } else if (p >= 0.35 && p < 0.70 && currentArStage !== 2) {
+          setArStage(2);
+        } else if (p >= 0.70 && currentArStage !== 3) {
+          setArStage(3);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(560, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-neon-green);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'scan-wifi-bssid') {
+        res.innerHTML = `
+          BSSID              SSID                CH  RSSI   SECURITY<br>
+          00:14:22:01:8A:10  COFFEE_ENTERPRISE   1   -45dBm WPA3-Enterprise<br>
+          <span style="color:var(--accent-red);">DE:AD:BE:EF:00:01  COFFEE_SECURE_NODE  6   -38dBm Open (Captive Portal) [ROGUE]</span><br>
+          70:3A:0E:44:11:92  PUBLIC_GUEST        11  -72dBm WPA2-PSK
+        `;
+      } else if (low === 'audit-evil-twin') {
+        res.innerHTML = `
+          <span style="color:var(--accent-red);">[ALERT: EVIL TWIN ROGUE DETECTED]</span><br>
+          * Rogue AP MAC: DE:AD:BE:EF:00:01 (Broadcasting cloned SSID)<br>
+          * Attack Vector: Credential Harvesting via unencrypted HTTP Captive Portal.<br>
+          * Mitigation: Radio RF jamming signal suppressed. MAC added to WIPS blocklist.
+        `;
+      } else if (low === 'enforce-wpa3') {
+        res.innerHTML = `
+          [WIRELESS SECURITY POLICY ENFORCEMENT]<br>
+          * Authentication Protocol: WPA3-Enterprise (SAE + 192-bit Security Suite)<br>
+          * Protected Management Frames (PMF): MANDATORY (802.11w active)<br>
+          * Rogue Mitigation: Client isolation enabled. Deauthentication attacks neutralized.
+        `;
+      } else if (low === 'deauth-suppression') {
+        res.innerHTML = `
+          [802.11w PMF ACTIVE]<br>
+          * Disassociation / Deauth frames signed with SHA-256 HMAC.<br>
+          * Result: Spoofed deauthentication packets rejected by client network stack.
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 8 diagnostics:<br>
+          - <code>scan-wifi-bssid</code>: Scan local 2.4/5GHz wireless frequencies for APs<br>
+          - <code>audit-evil-twin</code>: Inspect rogue AP signatures &amp; captive portal traps<br>
+          - <code>enforce-wpa3</code>: Mandate WPA3-Enterprise with Protected Management Frames<br>
+          - <code>deauth-suppression</code>: Verify cryptographic mitigation of disconnect attacks<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  
+    function saveEpProgress() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(8)) {
+          list.push(8);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+    
+  </script>
+</body>
+</html>

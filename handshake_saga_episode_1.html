@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 1: The Encapsulation Protocol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #04060e;
+      --bg-panel: #080e22;
+      --bg-card: #0e1736;
+      --border-glow: #1a2a54;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-gold: #fbbf24;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(4, 6, 14, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .hud-btn {
+      background: #0d162e;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .hud-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-green));
+      box-shadow: 0 0 10px var(--accent-cyan);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(0, 240, 255, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-cyan);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-cyan {
+      color: var(--accent-cyan);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    }
+    .comic-title span.neon-gold {
+      color: var(--accent-gold);
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #040816;
+      border-left: 4px solid var(--accent-cyan);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-cyan);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.switch { border-left: 5px solid var(--accent-purple); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-card.switch .char-avatar {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE ENCAPSULATION ARMORY */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 180vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 70px;
+      background: #060b1e;
+      border: 2px solid var(--accent-cyan);
+      border-radius: 14px;
+      padding: 1.75rem;
+      box-shadow: 0 0 45px rgba(0, 240, 255, 0.2);
+      min-height: 490px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+
+    .armory-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-top: 0.8rem;
+    }
+
+    .svg-armory-display {
+      background: #02040c;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: relative;
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.2rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-cyan);
+      line-height: 1.5;
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #03050c;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #091024;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #080d1e;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+
+    /* Big Green Egress / Next Mission Banner */
+    .next-mission-panel {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%);
+      border: 2px solid var(--accent-green);
+      border-radius: 14px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 3rem;
+      box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);
+    }
+
+    .next-mission-title {
+      font-family: var(--comic-font);
+      font-size: 2rem;
+      color: var(--accent-green);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .next-mission-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      background: var(--accent-green);
+      color: #000;
+      font-family: var(--code-font);
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 0.85rem 1.75rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    .next-mission-btn:hover {
+      background: #fff;
+      color: #000;
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+    }
+
+    @media (max-width: 768px) {
+      .armory-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+      .sticky-viewport { top: 60px; padding: 1.25rem; min-height: 440px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 1</span> THE ENCAPSULATION PROTOCOL
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" class="hud-btn">⊞ HUB</a>
+      <button class="hud-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE APPLICATION LAYER BIRTH -->
+    <section class="scene-panel" data-stamp="THE DIGITAL ARMORY // LAYER 7 TO LAYER 1">
+      <div class="dk-badge">DOMAIN 1.0 // OSI 7-LAYER REFERENCE MODEL</div>
+      <h1 class="comic-title">THE <span class="neon-cyan">ENCAPSULATION</span> ARMORY</h1>
+      <p class="scene-lead">
+        A user clicks a link in London. Deep in the processor silicon, a single burst of user intent materializes: Lead Packet <strong>Aguslavski</strong>. But a raw byte of payload cannot survive the wild copper and optical jungle of the internet alone. He must enter the Encapsulation Armory to be armored layer by layer.
+      </p>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">Agent Payload // Raw Data Byte</span></h3>
+          <div class="speech-bubble">
+            "I'm just a raw UTF-8 string: 'GET /index.html HTTP/1.1'. If you drop me onto an Ethernet wire right now, I have no ports, no IP, and no MAC address—I'll dissolve into line noise before I reach the wall jack!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Master Armorer // Protocol Enforcement</span></h3>
+          <div class="speech-bubble">
+            "Welcome to the armory line, recruit. We're going down the stack: Layer 7 down to Layer 1. TCP armor for reliability, IP cloaking for geographic routing, and Ethernet MAC frames for local transit. Step onto the assembly clamp."
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // THE OSI 7 LAYERS</h4>
+        <p>
+          • <strong>Layer 7 (Application):</strong> HTTP/S, DNS, SSH — User interaction.<br>
+          • <strong>Layer 6 (Presentation):</strong> TLS/SSL Encryption, compression, data format.<br>
+          • <strong>Layer 5 (Session):</strong> RPC, NetBIOS — Maintains state between endpoints.<br>
+          • <strong>Layer 4 (Transport):</strong> TCP/UDP — Port numbers &amp; sequencing (Segment).<br>
+          • <strong>Layer 3 (Network):</strong> IPv4/IPv6 — Logical routing across WANs (Packet).<br>
+          • <strong>Layer 2 (Data Link):</strong> MAC addresses &amp; Frame Check Sequence (Frame).<br>
+          • <strong>Layer 1 (Physical):</strong> Copper voltages, optical laser pulses, RF radio (Bits).
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING THE ANIMATED SVG ARMORY -->
+    <div class="scroll-pin-wrapper" id="armoryTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-cyan); color:var(--accent-cyan);">
+            SCROLL DOWN OR TAP STAGES TO ENCAPSULATE
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            THE ASSEMBLY CONVEYOR: <span style="color: var(--accent-cyan);" id="armorySubhead">L7 PAYLOAD DATA</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel or tap stages. Watch the automated armory clamps attach TCP headers, IP addresses, and the Ethernet frame.
+          </p>
+        </div>
+
+        <div class="armory-grid">
+          <!-- Animated SVG Packet Blueprint -->
+          <div class="svg-armory-display">
+            <svg width="260" height="190" viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg" id="packetSvg">
+              <!-- Background Grid -->
+              <rect width="260" height="190" fill="#040714" rx="8"/>
+              <path d="M 0,40 L 260,40 M 0,95 L 260,95 M 0,150 L 260,150" stroke="#0e1736" stroke-width="1"/>
+              
+              <!-- Frame Base (L2) -->
+              <rect x="20" y="25" width="220" height="140" rx="8" fill="rgba(168, 85, 247, 0.08)" stroke="#a855f7" stroke-width="2" id="frameBox" stroke-dasharray="4,4" opacity="0.3"/>
+              <text x="30" y="40" fill="#a855f7" font-family="'Fira Code', monospace" font-size="8" font-weight="700" id="frameLabel" opacity="0.3">L2 ETHERNET FRAME</text>
+
+              <!-- IP Packet Shell (L3) -->
+              <rect x="40" y="50" width="180" height="95" rx="6" fill="rgba(251, 191, 36, 0.08)" stroke="#fbbf24" stroke-width="2" id="packetBox" stroke-dasharray="4,4" opacity="0.3"/>
+              <text x="48" y="65" fill="#fbbf24" font-family="'Fira Code', monospace" font-size="8" font-weight="700" id="packetLabel" opacity="0.3">L3 IP PACKET</text>
+
+              <!-- TCP Segment Shell (L4) -->
+              <rect x="60" y="75" width="140" height="55" rx="5" fill="rgba(0, 240, 255, 0.12)" stroke="#00f0ff" stroke-width="2" id="segmentBox" opacity="0.3"/>
+              <text x="68" y="90" fill="#00f0ff" font-family="'Fira Code', monospace" font-size="8" font-weight="700" id="segmentLabel" opacity="0.3">L4 TCP SEGMENT</text>
+
+              <!-- Raw Data Core (L7 Payload) -->
+              <rect x="80" y="95" width="100" height="25" rx="4" fill="#00f0ff" id="payloadBox">
+                <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+              </rect>
+              <text x="130" y="111" fill="#000" font-family="'Fira Code', monospace" font-size="9" font-weight="800" text-anchor="middle" id="payloadText">DATA PAYLOAD</text>
+            </svg>
+          </div>
+
+          <div class="stage-narrative" id="armoryNarrative">
+            <strong>Stage 1/3 (Application Core):</strong> Aguslavski stands on the armory pad as pure Data payload. No network routing, no reliability tracking. He is ready for transport clamping!
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnA1" onclick="setArmoryStage(1)">[1] L7 Data Core</button>
+            <button class="stage-btn" id="btnA2" onclick="setArmoryStage(2)">[2] L4 &amp; L3 Headers</button>
+            <button class="stage-btn" id="btnA3" onclick="setArmoryStage(3)">[3] L2 Frame &amp; Bits</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: LADY SWITCH & THE MAC CLAMP -->
+    <section class="scene-panel" data-stamp="THE COPPER SLIPWAY // 1000BASE-T RJ-45">
+      <div class="dk-badge" style="border-color:var(--accent-purple); color:var(--accent-purple);">
+        DOMAIN 2.0 // SWITCHING &amp; MAC ADDRESS LEARNING
+      </div>
+      <h2 class="comic-title">THE MAC STAMP &amp; <span class="neon-cyan">THE WIRE DROP</span></h2>
+      <p class="scene-lead">
+        With the TCP and IP headers bolted tight, Aguslavski reaches the edge of the switchport. Standing on the bridge is Lady Switch, holding the MAC Address table.
+      </p>
+
+      <div class="char-card switch">
+        <div class="char-avatar">LS</div>
+        <div class="char-meta">
+          <h3>LADY SWITCH <span class="char-role">Layer 2 Controller // CAM Table Custodian</span></h3>
+          <div class="speech-bubble">
+            "Destination MAC: 00:1A:2B:3C:4D:5E. Verified on Port GigabitEthernet0/1. I've calculated your 32-bit Frame Check Sequence (CRC-32) trailer—if even a single bit flips across the copper cable, I discard you at the next hop. Clear the slipway!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">Encapsulated Frame Ready</span></h3>
+          <div class="speech-bubble">
+            "Armor locked! Source: 192.168.101.200:49152. Destination: 203.0.113.1:443. Dropping into the RJ-45 twisted pair at 1 Gigabit per second! Next stop: The Intranet Lounge!"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-purple);">
+        <h4>🛡️ CCNA &amp; NETWORK+ EXAM FLASHCARDS // PDUs</h4>
+        <p>
+          <strong>Protocol Data Units (PDUs):</strong><br>
+          • Layer 4 PDU = <strong>Segment</strong> (TCP) or <strong>Datagram</strong> (UDP).<br>
+          • Layer 3 PDU = <strong>Packet</strong> (IP Header + Payload).<br>
+          • Layer 2 PDU = <strong>Frame</strong> (Header + Packet + Trailer/FCS).<br>
+          • Layer 1 PDU = <strong>Bits</strong> (Physical transmission of 1s and 0s).
+        </p>
+      </div>
+    </section>
+
+    <!-- LIVE CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="DIAGNOSTIC TERMINAL // PACKET DISSECTOR">
+      <div class="dk-badge">EPISODE 1 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-cyan">PACKET DISSECTOR CONSOLE</span></h2>
+      <p class="scene-lead">
+        Run live packet capture dissection commands to inspect Aguslavski's encapsulated headers:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('inspect-pdu')">inspect-pdu</button>
+        <button class="cmd-chip" onclick="runCmd('show-headers')">show-headers</button>
+        <button class="cmd-chip" onclick="runCmd('verify-fcs')">verify-fcs</button>
+        <button class="cmd-chip" onclick="runCmd('tcp-handshake')">tcp-handshake</button>
+        <button class="cmd-chip" onclick="runCmd('help')">help</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">aguslavski@local-host: ~/encapsulation-engine</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">Packet Assembly Stack online: AGUSLAVSKI_FRAME_01</div>
+          <div class="log dim">Type 'help' for inspection commands.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+    <!-- Next Mission Launch Panel -->
+    <div class="next-mission-panel">
+      <div class="next-mission-title">MISSION 01 COMPLETE!</div>
+      <p style="color: var(--text-dim); font-size: 0.95rem;">
+        Aguslavski has survived full OSI encapsulation and entered the network stream. The Intranet Lounge awaits.
+      </p>
+      <a href="handshake_saga_episode_2.html" class="next-mission-btn" onclick="saveEp1Done()">
+        PROCEED TO EPISODE 2: THE INTRANET LOUNGE →
+      </a>
+    </div>
+
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1020, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    function saveEp1Done() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(1)) {
+          list.push(1);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+
+    let currentArmoryStage = 1;
+    function setArmoryStage(stage) {
+      currentArmoryStage = stage;
+      const sub = document.getElementById('armorySubhead');
+      const nar = document.getElementById('armoryNarrative');
+      const fBox = document.getElementById('frameBox');
+      const fLbl = document.getElementById('frameLabel');
+      const pBox = document.getElementById('packetBox');
+      const pLbl = document.getElementById('packetLabel');
+      const sBox = document.getElementById('segmentBox');
+      const sLbl = document.getElementById('segmentLabel');
+
+      const b1 = document.getElementById('btnA1');
+      const b2 = document.getElementById('btnA2');
+      const b3 = document.getElementById('btnA3');
+
+      if (b1 && b2 && b3) {
+        b1.classList.remove('active');
+        b2.classList.remove('active');
+        b3.classList.remove('active');
+      }
+
+      if (stage === 1) {
+        if (b1) b1.classList.add('active');
+        sub.innerText = 'L7 PAYLOAD DATA';
+        sub.style.color = '#00f0ff';
+        fBox.style.opacity = '0.2';
+        fLbl.style.opacity = '0.2';
+        pBox.style.opacity = '0.2';
+        pLbl.style.opacity = '0.2';
+        sBox.style.opacity = '0.3';
+        sLbl.style.opacity = '0.3';
+        nar.innerHTML = '<strong>Stage 1/3 (Application Core):</strong> Aguslavski stands on the armory pad as pure Data payload. No network routing, no reliability tracking. He is ready for transport clamping!';
+        playTone(440, 0.08);
+      } else if (stage === 2) {
+        if (b2) b2.classList.add('active');
+        sub.innerText = 'L4 TCP & L3 IP PACKET';
+        sub.style.color = '#fbbf24';
+        fBox.style.opacity = '0.2';
+        fLbl.style.opacity = '0.2';
+        pBox.style.opacity = '0.9';
+        pLbl.style.opacity = '1';
+        sBox.style.opacity = '0.9';
+        sLbl.style.opacity = '1';
+        nar.innerHTML = '<strong>Stage 2/3 (Transport & Network Clamping):</strong> CLANG! Layer 4 TCP armor clamps on with Port 49152 → 443 & Sequence numbers. Layer 3 IP armor stamps Source 192.168.101.200 and Destination 203.0.113.1!';
+        playTone(660, 0.08);
+      } else {
+        if (b3) b3.classList.add('active');
+        sub.innerText = 'L2 FRAME SEALED (READY)';
+        sub.style.color = '#10b981';
+        fBox.style.opacity = '1';
+        fLbl.style.opacity = '1';
+        pBox.style.opacity = '0.9';
+        pLbl.style.opacity = '1';
+        sBox.style.opacity = '0.9';
+        sLbl.style.opacity = '1';
+        nar.innerHTML = '<strong>Stage 3/3 (Ethernet Encapsulation Complete):</strong> Layer 2 MAC addresses locked: Source MAC 00:1A:2B:3C:4D:5E. 32-bit CRC Frame Check Sequence attached to the trailer. Aguslavski is fully armored!';
+        playTone(980, 0.12);
+        saveEp1Done();
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / (docHeight > 0 ? docHeight : 1)) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin armory
+      const trigger = document.getElementById('armoryTrigger');
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const triggerHeight = trigger.offsetHeight;
+      const viewH = window.innerHeight;
+
+      if (rect.top <= 100 && rect.bottom >= 150) {
+        const scrolled = Math.max(0, 100 - rect.top);
+        const maxScroll = Math.max(1, triggerHeight - viewH * 0.7);
+        const p = Math.min(1, Math.max(0, scrolled / maxScroll));
+
+        if (p < 0.33 && currentArmoryStage !== 1) {
+          setArmoryStage(1);
+        } else if (p >= 0.33 && p < 0.68 && currentArmoryStage !== 2) {
+          setArmoryStage(2);
+        } else if (p >= 0.68 && currentArmoryStage !== 3) {
+          setArmoryStage(3);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(560, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-cyan);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'inspect-pdu') {
+        res.innerHTML = `
+          [PROTOCOL DATA UNIT (PDU) DISSECTION]<br>
+          • L7 Data: "GET /index.html HTTP/1.1" [128 Bytes]<br>
+          • L4 Segment: TCP [SrcPort: 49152, DstPort: 443, Seq: 1, Ack: 0, Flags: SYN]<br>
+          • L3 Packet: IPv4 [Src: 192.168.101.200, Dst: 203.0.113.1, TTL: 64]<br>
+          • L2 Frame: Ethernet II [SrcMAC: 00:1a:2b:3c:4d:5e, DstMAC: 00:50:56:c0:00:08, Type: 0x0800 IPv4]<br>
+          • L1 Bits: Physical Signaling on 1000BASE-T RJ45
+        `;
+      } else if (low === 'show-headers') {
+        res.innerHTML = `
+          [ETHERNET + IP + TCP HEADER DUMP]<br>
+          0000  00 50 56 c0 00 08 00 1a 2b 3c 4d 5e 08 00 45 00  .PV.....+&lt;M^..E.<br>
+          0010  00 3c 1a 2b 40 00 40 06 b2 a1 c0 a8 65 c8 cb 00  .&lt;.+@.@.....e...<br>
+          0020  71 01 c0 00 01 bb 00 00 00 01 00 00 00 00 a0 02  q...............<br>
+          0030  fa f0 3f a1 00 00 02 04 05 b4 04 02 08 0a         ..?...........
+        `;
+      } else if (low === 'verify-fcs') {
+        res.innerHTML = `
+          [FRAME CHECK SEQUENCE (FCS) CRC-32 VERIFICATION]<br>
+          * Computed CRC: 0x3FA1E09D<br>
+          * Received CRC: 0x3FA1E09D<br>
+          <span style="color:var(--accent-green);">* Integrity Status: VALID (0 bit errors detected).</span>
+        `;
+      } else if (low === 'tcp-handshake') {
+        res.innerHTML = `
+          [TCP THREE-WAY HANDSHAKE SIMULATION]<br>
+          1. Aguslavski &rarr; Server : [SYN] Seq=0 Win=65535 MSS=1460<br>
+          2. Server &rarr; Aguslavski : [SYN, ACK] Seq=0 Ack=1 Win=65535 MSS=1460<br>
+          3. Aguslavski &rarr; Server : [ACK] Seq=1 Ack=1<br>
+          <span style="color:var(--accent-green);">* Status: CONNECTION ESTABLISHED</span>
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 1 diagnostics:<br>
+          - <code>inspect-pdu</code>: Dissect OSI Layer 7 down to Layer 1 PDUs<br>
+          - <code>show-headers</code>: Hex dump of Ethernet, IP, and TCP headers<br>
+          - <code>verify-fcs</code>: Run CRC-32 Frame Check Sequence audit<br>
+          - <code>tcp-handshake</code>: Simulate classic 3-way handshake sequence<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  </script>
+</body>
+</html>

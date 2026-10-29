@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 7: The Meltdown & The Cloud Migration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #040711;
+      --bg-panel: #091024;
+      --bg-card: #0e1836;
+      --border-glow: #1a2c5a;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-cloud: #38bdf8;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(4, 7, 17, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-cloud);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent-cloud);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      color: var(--accent-cloud);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-btn {
+      background: #0d1527;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .sound-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-red), var(--accent-amber), var(--accent-cloud));
+      box-shadow: 0 0 10px var(--accent-cloud);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-cloud);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-cloud {
+      color: var(--accent-cloud);
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    }
+
+    .comic-title span.neon-red {
+      color: var(--accent-red);
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid var(--accent-cloud);
+      color: var(--accent-cloud);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #050a18;
+      border-left: 4px solid var(--accent-cloud);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-cloud);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.hypervisor { border-left: 5px solid var(--accent-cloud); }
+    .char-card.forensic { border-left: 5px solid var(--accent-green); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.hypervisor .char-avatar {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: var(--accent-cloud);
+      color: var(--accent-cloud);
+    }
+
+    .char-card.forensic .char-avatar {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE P2V MIGRATION ENGINE */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 180vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 75px;
+      background: #060b18;
+      border: 2px solid var(--accent-cloud);
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 0 45px rgba(56, 189, 248, 0.2);
+      min-height: 490px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .migration-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .migration-monitor {
+      background: #02040c;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .migration-header {
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      color: var(--accent-cloud);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glow);
+      padding-bottom: 0.5rem;
+    }
+
+    .migration-visual {
+      text-align: center;
+      padding: 1rem;
+      border: 2px dashed rgba(56, 189, 248, 0.4);
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.05);
+      margin-bottom: 1rem;
+    }
+
+    .migration-title {
+      font-family: var(--comic-font);
+      font-size: 1.8rem;
+      color: var(--accent-cloud);
+      letter-spacing: 0.05em;
+    }
+
+    .migration-meta {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-cloud);
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-cloud);
+      color: var(--accent-cloud);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #03050c;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #091024;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #080d1e;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-cloud);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid var(--accent-cloud);
+      color: var(--accent-cloud);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-cloud);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .migration-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 7</span> THE MELTDOWN &amp; THE CLOUD MIGRATION
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" style="background:#0d162e; border:1px solid #1a2a50; color:#94a3b8; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.75rem; font-family:'Fira Code', monospace; text-decoration:none;">⊞ HUB</a>
+      <button class="sound-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE ASHES OF THE METAL SERVER -->
+    <section class="scene-panel" data-stamp="RUINED SERVER RACK // HARDWARE COLLAPSE">
+      <div class="dk-badge">CLOUD+ &amp; NETWORK+ // VIRTUALIZATION, P2V &amp; VMOTION</div>
+      <h1 class="comic-title">THE <span class="neon-red">VOLCANO MELTDOWN</span></h1>
+      <p class="scene-lead">
+        The copper heatsinks glow white-hot. A cooling failure cascades into total hardware catastrophe—the metal chassis warps, silicon melts, and the Blue Screen of Death seals the physical rack forever. But when the Forensic Analyst sweeps the melted motherboards, the log file has no record of deletion.
+      </p>
+
+      <div class="char-card forensic">
+        <div class="char-avatar">FA</div>
+        <div class="char-meta">
+          <h3>THE FORENSIC ANALYST <span class="char-role">Incident Forensics // Memory Extraction</span></h3>
+          <div class="speech-bubble">
+            "Look at the last fragment in the journal: It doesn't say SYSTEM HALTED. It says: INITIATING VMOTION... P2V MIGRATION EXECUTED! Aguslavski didn't die with the metal. He shed his physical server body and jumped into the hypervisor ether milliseconds before the silicon melted!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Offline Backup Guardian // Cold Site Key</span></h3>
+          <div class="speech-bubble">
+            "Hardware is mortal. Data is forever. I've got the offline snapshot USB right here. We don't need to solder a new motherboard—we just need to provision him into the multi-cloud."
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // VIRTUALIZATION &amp; HIGH AVAILABILITY</h4>
+        <p>
+          <strong>P2V (Physical to Virtual):</strong> The process of converting an operating system and state running on physical bare-metal hardware into a virtual disk/VM image.<br>
+          <strong>vMotion / Live Migration:</strong> Moving an active, running virtual machine from one physical hypervisor host to another with zero perceived downtime.<br>
+          <strong>Hypervisor Type 1 (Bare-Metal):</strong> Runs directly on hardware (ESXi, Hyper-V, KVM) for maximum throughput and enterprise resilience.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING THE P2V CLOUD ASCENSION -->
+    <div class="scroll-pin-wrapper" id="p2vTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-cloud); color:var(--accent-cloud);">
+            SCROLL DOWN OR CLICK STAGES TO ASCEND
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            THE HYPERVISOR VOID: <span style="color: var(--accent-cloud);">P2V TO DOCKER CONTAINER</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel or tap stages. Watch Aguslavski evolve from heavy bare-metal hardware to an agile, geo-redundant microservice container.
+          </p>
+        </div>
+
+        <div class="migration-grid">
+          <div class="migration-monitor">
+            <div class="migration-header">
+              <span>ORCHESTRATION PIPELINE // KUBERNETES &amp; DOCKER</span>
+              <span id="migStatus" style="color:var(--accent-amber);">P2V MIGRATING</span>
+            </div>
+            <div class="migration-visual">
+              <div class="migration-title" id="migTitle">HEAVY HARDWARE (OS)</div>
+              <div class="migration-meta" id="migMeta">CHASSIS: BARE-METAL SERVER // STATE: MELTED</div>
+            </div>
+            <div style="font-family:var(--code-font); font-size:0.75rem; color:var(--text-dim);">
+              ARCHITECTURE: <span id="migArch" style="color:var(--accent-red); font-weight:700;">BARE-METAL 4U</span> | REDUNDANCY: <span id="migRedun" style="color:var(--accent-amber); font-weight:700;">LOCAL ONLY</span>
+            </div>
+          </div>
+
+          <div class="stage-narrative" id="migNarrative">
+            <strong>Stage 1/3 (The Physical Shell):</strong> Aguslavski looks at his hands in the white hypervisor void. He has no MAC address. He has no copper cable. He is pure abstracted state floating in the datacenter ether.
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnP1" onclick="setMigStage(1)">[1] Melted Metal &rarr; VM</button>
+            <button class="stage-btn" id="btnP2" onclick="setMigStage(2)">[2] Hypervisor vMotion</button>
+            <button class="stage-btn" id="btnP3" onclick="setMigStage(3)">[3] Containerized Microservice</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: THE ASCENSION TO THE CONTAINER -->
+    <section class="scene-panel" data-stamp="THE CLOUD MULTI-REGION // GLOBAL ORCHESTRATION">
+      <div class="dk-badge" style="border-color:var(--accent-cloud); color:var(--accent-cloud);">
+        DOMAIN 3.0 // DOCKER, KUBERNETES &amp; GEO-REDUNDANCY
+      </div>
+      <h2 class="comic-title">THE BIRTH OF <span class="neon-cloud">CONTAINER AGUSLAVSKI</span></h2>
+      <p class="scene-lead">
+        A voice echoes from the luminescent sky. The Hypervisor steps forward—a being formed of pure orchestrated light.
+      </p>
+
+      <div class="char-card hypervisor">
+        <div class="char-avatar">HY</div>
+        <div class="char-meta">
+          <h3>THE HYPERVISOR <span class="char-role">Cloud Orchestrator // Cluster Management</span></h3>
+          <div class="speech-bubble">
+            "You are no longer an operating system tied to a piece of metal, Agent Aguslavski. You are now a Container. Stripped down. Lightweight. Portable across AWS, Azure, and Google Cloud. You share the host kernel. You launch in milliseconds."
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">Microservice Container // agent-payload:latest</span></h3>
+          <div class="speech-bubble">
+            "I feel... lighter! No bloated drivers. No virtual BIOS delays. I'm replicated across London, Frankfurt, and Virginia! If an entire continent's data center goes down, Kubernetes spins me back up in seconds!"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-cloud);">
+        <h4>🛡️ CLOUD+ &amp; NETWORK+ EXAM SHOWDOWN // VM VS CONTAINER</h4>
+        <p>
+          <strong>Virtual Machine (VM):</strong> Includes a full guest operating system, virtual drivers, and virtualized hardware. Heavyweight (Gigabytes), minutes to boot, managed by a Hypervisor.<br>
+          <strong>Container (Docker):</strong> Packages only application code and dependencies, sharing the host OS kernel. Lightweight (Megabytes), launches in sub-seconds, portable anywhere.<br>
+          <strong>Geo-Redundancy:</strong> Storing snapshots and container pods across multiple geographic regions (e.g. EU-West-2 and US-East-1) to ensure five-nines (99.999%) availability.
+        </p>
+      </div>
+    </section>
+
+    <!-- LIVE CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="CLOUD ORCHESTRATION // K8S TERMINAL">
+      <div class="dk-badge">EPISODE 7 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-cloud">CLOUD TERMINAL</span></h2>
+      <p class="scene-lead">
+        Audit live container pods, verify vMotion status, or trigger multi-region failovers:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('kubectl-get-pods')">kubectl-get-pods</button>
+        <button class="cmd-chip" onclick="runCmd('vmotion-status')">vmotion-status</button>
+        <button class="cmd-chip" onclick="runCmd('docker-inspect')">docker-inspect</button>
+        <button class="cmd-chip" onclick="runCmd('geo-failover-test')">geo-failover-test</button>
+        <button class="cmd-chip" onclick="runCmd('help')">help</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">admin@k8s-cluster: ~/cloud-ops</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">Cloud Cluster initialized: CLOUD_FABRIC_HYPERVISOR_V7</div>
+          <div class="log dim">Type 'help' to review orchestration commands.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- Next Mission Launch Panel -->
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%); border: 2px solid #10b981; border-radius: 14px; padding: 2rem; text-align: center; margin-top: 3rem; box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);">
+      <div style="font-family: 'Bangers', cursive; font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; letter-spacing: 0.05em;">MISSION 07 ACCOMPLISHED!</div>
+      <p style="color: #94a3b8; font-size: 0.95rem;">Protocol milestones verified. Clearance advanced for the next segment.</p>
+      <a href="handshake_saga_episode_8.html" onclick="saveEpProgress()" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; background: #10b981; color: #000; font-family: 'Fira Code', monospace; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.75rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+        ENGAGE EPISODE 8: THE EVIL TWIN & THE AR SANDBOX →
+      </a>
+    </div>
+    
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1050, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    let currentMigStage = 1;
+    function setMigStage(stage) {
+      currentMigStage = stage;
+      const mStatus = document.getElementById('migStatus');
+      const mTitle = document.getElementById('migTitle');
+      const mMeta = document.getElementById('migMeta');
+      const mArch = document.getElementById('migArch');
+      const mRedun = document.getElementById('migRedun');
+      const nar = document.getElementById('migNarrative');
+
+      const b1 = document.getElementById('btnP1');
+      const b2 = document.getElementById('btnP2');
+      const b3 = document.getElementById('btnP3');
+
+      b1.classList.remove('active');
+      b2.classList.remove('active');
+      b3.classList.remove('active');
+
+      if (stage === 1) {
+        b1.classList.add('active');
+        mStatus.innerText = 'P2V CONVERTING';
+        mStatus.style.color = '#ef4444';
+        mTitle.innerText = 'PHYSICAL BARE-METAL';
+        mTitle.style.color = '#ef4444';
+        mMeta.innerText = 'HARDWARE MELTDOWN ESCAPED // EXTRACTING RAW IMAGE';
+        mArch.innerText = 'PHYSICAL 4U RACK';
+        mArch.style.color = '#ef4444';
+        mRedun.innerText = 'LOCAL STANDALONE';
+        mRedun.style.color = '#ef4444';
+        nar.innerHTML = '<strong>Stage 1/3 (The Physical Shell):</strong> Aguslavski looks at his hands in the white hypervisor void. He has no MAC address. He has no copper cable. He is pure abstracted state floating in the datacenter ether.';
+        playTone(460, 0.08);
+      } else if (stage === 2) {
+        b2.classList.add('active');
+        mStatus.innerText = 'VMOTION COMPLETED';
+        mStatus.style.color = '#f59e0b';
+        mTitle.innerText = 'VIRTUAL MACHINE (VM)';
+        mTitle.style.color = '#f59e0b';
+        mMeta.innerText = 'GUEST OS ON TYPE-1 HYPERVISOR // HOST REBOUND';
+        mArch.innerText = 'VIRTUALIZED ESXi';
+        mArch.style.color = '#f59e0b';
+        mRedun.innerText = 'HIGH AVAILABILITY CLUSTER';
+        mRedun.style.color = '#f59e0b';
+        nar.innerHTML = '<strong>Stage 2/3 (Virtual Machine):</strong> Live migration active! Memory pages synchronized between hypervisor nodes with 0ms interruption. Aguslavski is running purely in software!';
+        playTone(720, 0.08);
+      } else {
+        b3.classList.add('active');
+        mStatus.innerText = 'CONTAINER RUNNING';
+        mStatus.style.color = '#10b981';
+        mTitle.innerText = 'DOCKER CONTAINER POD';
+        mTitle.style.color = '#38bdf8';
+        mMeta.innerText = 'IMAGE: agent-payload:latest // RUNTIME: 4ms';
+        mArch.innerText = 'MICROSERVICE (SHARED KERNEL)';
+        mArch.style.color = '#10b981';
+        mRedun.innerText = 'MULTI-REGION GEO-DISTRIBUTED';
+        mRedun.style.color = '#10b981';
+        nar.innerHTML = '<strong>Stage 3/3 (Microservice Ascension):</strong> Stripped of guest OS weight! Aguslavski is packaged as a Docker container pod, orchestrated across multiple continents by Kubernetes. Five-nines resilience achieved!';
+        playTone(1020, 0.12);
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin Migration
+      const trigger = document.getElementById('p2vTrigger');
+      const rect = trigger.getBoundingClientRect();
+      const total = trigger.offsetHeight - window.innerHeight;
+
+      if (rect.top <= 80 && rect.bottom >= window.innerHeight * 0.5) {
+        const scrolledDistance = Math.max(0, 80 - rect.top);
+        const p = Math.min(1, scrolledDistance / (total > 0 ? total : 1));
+
+        if (p < 0.35 && currentMigStage !== 1) {
+          setMigStage(1);
+        } else if (p >= 0.35 && p < 0.70 && currentMigStage !== 2) {
+          setMigStage(2);
+        } else if (p >= 0.70 && currentMigStage !== 3) {
+          setMigStage(3);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(580, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-cloud);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'kubectl-get-pods') {
+        res.innerHTML = `
+          NAME                              READY   STATUS    RESTARTS   AGE<br>
+          aguslavski-payload-784f9c8d-w2v9z 1/1     Running   0          42s<br>
+          aguslavski-payload-784f9c8d-k4q1m 1/1     Running   0          42s<br>
+          aguslavski-payload-784f9c8d-x8p7r 1/1     Running   0          42s<br>
+          <span style="color:var(--accent-green);">* Desired Replicas: 3 | Current: 3 (Auto-healing active)</span>
+        `;
+      } else if (low === 'vmotion-status') {
+        res.innerHTML = `
+          [VMWARE VMOTION LIVE MIGRATION LOG]<br>
+          * Source Host: esxi-host-01.london.datacenter (MELTED)<br>
+          * Target Host: esxi-host-08.cloud.datacenter (ONLINE)<br>
+          * Pre-copy RAM Sync: 100% | Switchover Latency: 0.8ms (Zero packet loss)
+        `;
+      } else if (low === 'docker-inspect') {
+        res.innerHTML = `
+          [DOCKER CONTAINER INSPECTION]<br>
+          * Image: repository.foyta.local/agent-payload:latest<br>
+          * Container ID: c9e41ba801f2<br>
+          * Size: 24.8 MB (Lightweight Alpine Linux Base)<br>
+          * Port Bindings: 443/TCP &rarr; 8443
+        `;
+      } else if (low === 'geo-failover-test') {
+        res.innerHTML = `
+          <span style="color:var(--accent-amber);">[SIMULATING REGIONAL CLOUD OUTAGE]</span><br>
+          * Simulating Region Down: EU-West-2 (London Data Center)<br>
+          * Global Traffic Manager (GTM): DNS Health Check Failed.<br>
+          * Failover: Traffic rerouted to EU-Central-1 (Frankfurt) in 2.1s.<br>
+          <span style="color:var(--accent-green);">* Result: 99.999% Service Level Agreement Preserved.</span>
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 7 diagnostics:<br>
+          - <code>kubectl-get-pods</code>: View Kubernetes container pod orchestration<br>
+          - <code>vmotion-status</code>: Inspect live hypervisor VM migration telemetry<br>
+          - <code>docker-inspect</code>: Inspect lightweight container image specifications<br>
+          - <code>geo-failover-test</code>: Simulate regional cloud outage &amp; GTM rerouting<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  
+    function saveEpProgress() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(7)) {
+          list.push(7);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+    
+  </script>
+</body>
+</html>

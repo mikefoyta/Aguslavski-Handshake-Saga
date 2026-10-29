@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 5: The Physical Fortress & The Biometric Airlock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #05070e;
+      --bg-panel: #0a1122;
+      --bg-card: #0f1a34;
+      --border-glow: #1a2f58;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-emerald: #059669;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(5, 7, 14, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-emerald);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--accent-emerald);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      color: var(--accent-green);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-btn {
+      background: #0d1527;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .sound-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-emerald), var(--accent-green), var(--accent-cyan));
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-green);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-green {
+      color: var(--accent-green);
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #050a16;
+      border-left: 4px solid var(--accent-green);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-green);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.facility { border-left: 5px solid var(--accent-green); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-card.facility .char-avatar {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE MANTRAP AIRLOCK */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 180vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 75px;
+      background: #060b18;
+      border: 2px solid var(--accent-green);
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 0 45px rgba(16, 185, 129, 0.2);
+      min-height: 490px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .mantrap-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .airlock-doors {
+      background: #02050e;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .airlock-header {
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      color: var(--accent-green);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glow);
+      padding-bottom: 0.5rem;
+    }
+
+    .door-visuals {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .door-unit {
+      flex: 1;
+      height: 90px;
+      border-radius: 8px;
+      border: 2px solid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: all 0.25s ease;
+    }
+
+    .door-unit.unlocked {
+      border-color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+    }
+
+    .door-unit.locked {
+      border-color: var(--accent-red);
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+    }
+
+    .chamber-unit {
+      width: 60px;
+      height: 90px;
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-green);
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #03050c;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #091024;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #080d1e;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-green);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .mantrap-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 5</span> THE PHYSICAL FORTRESS &amp; THE BIOMETRIC AIRLOCK
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" style="background:#0d162e; border:1px solid #1a2a50; color:#94a3b8; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.75rem; font-family:'Fira Code', monospace; text-decoration:none;">⊞ HUB</a>
+      <button class="sound-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE DATA CENTER PERIMETER -->
+    <section class="scene-panel" data-stamp="PHYSICAL LAYER // LEVEL 4 HIGH SECURITY DATA CENTER">
+      <div class="dk-badge">SECURITY+ &amp; PHYSICAL SECURITY // DOMAIN 2.0 (DEFENSE-IN-DEPTH)</div>
+      <h1 class="comic-title">THE <span class="neon-green">PHYSICAL FORTRESS</span></h1>
+      <p class="scene-lead">
+        Firewalls and encryption are only as strong as the physical room holding the hardware. Aguslavski lands at the Master Government Vault. Eight-foot perimeter fencing with infrared vibration sensors lines the outer courtyard. Standing at the high-security entrance is Treasury Knight, keys in hand and SC/CTC vetting verified.
+      </p>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Physical Security Specialist // SIA CCTV &amp; Control Room Ops</span></h3>
+          <div class="speech-bubble">
+            "You can have AES-256 and post-quantum lattices, but if the cleaning crew can unplug the router to plug in a vacuum cleaner, your security posture is zero. Welcome to the Physical Layer. Outer fence cleared, CCTV telemetry active. Next step: the biometric airlock."
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">Agent Payload</span></h3>
+          <div class="speech-bubble">
+            "Those glass doors look thick... why can't both open at once?"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // PHYSICAL SECURITY CONTROLS</h4>
+        <p>
+          <strong>Deterrent &amp; Preventive:</strong> Perimeter fencing, warning signs, bollards, and locked server cages.<br>
+          <strong>Detective:</strong> Motion sensors, infrared beams, CCTV surveillance, and control room alarm logging.<br>
+          <strong>Access Control:</strong> Key fobs (RFID), smart cards, multi-factor hardware tokens, and biometrics (retina, fingerprint).
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING THE MANTRAP AIRLOCK -->
+    <div class="scroll-pin-wrapper" id="mantrapTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-green); color:var(--accent-green);">
+            SCROLL DOWN OR CLICK STAGES TO CYCLE AIRLOCK
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            THE MANTRAP: <span style="color: var(--accent-green);">ANTI-TAILGATING INTERLOCK</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel, swipe down, or tap the stage buttons below. Watch how the interlock system strictly prevents unauthorized followers (tailgating).
+          </p>
+        </div>
+
+        <div class="mantrap-grid">
+          <div class="airlock-doors">
+            <div class="airlock-header">
+              <span>SECURITY INTERLOCK STATUS</span>
+              <span id="airlockState" style="color:var(--accent-green);">STAGE 1 ACTIVE</span>
+            </div>
+            <div class="door-visuals">
+              <div class="door-unit unlocked" id="outerDoor">
+                OUTER DOOR<br><span id="outerState" style="font-size:0.65rem;">UNLOCKED</span>
+              </div>
+              <div class="chamber-unit" id="chamberMid">
+                SCAN<br>ZONE
+              </div>
+              <div class="door-unit locked" id="innerDoor">
+                INNER VAULT<br><span id="innerState" style="font-size:0.65rem;">LOCKED</span>
+              </div>
+            </div>
+            <div style="font-family:var(--code-font); font-size:0.75rem; color:var(--text-dim);">
+              BIOMETRIC VERIFICATION: <span id="bioStatus" style="color:var(--accent-amber); font-weight:700;">STANDBY</span> | WEIGHT SENSOR: <span id="weightStatus" style="color:var(--accent-cyan); font-weight:700;">1 PERSON</span>
+            </div>
+          </div>
+
+          <div class="stage-narrative" id="mantrapNarrative">
+            <strong>Stage 1/3 (Outer Access):</strong> Outer door unlocks with RFID smart card. Aguslavski steps into the chamber. Inner door remains bolted shut to ensure an airlock seal.
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnM1" onclick="setMantrapStage(1)">[1] Outer Entry</button>
+            <button class="stage-btn" id="btnM2" onclick="setMantrapStage(2)">[2] Chamber Scan &amp; Lock</button>
+            <button class="stage-btn" id="btnM3" onclick="setMantrapStage(3)">[3] Inner Vault Vault Access</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: THE SERVER CAGE & ENVIRONMENTAL CONTROLS -->
+    <section class="scene-panel" data-stamp="THE CORE VAULT // SERVER RACK CAGE">
+      <div class="dk-badge" style="border-color:var(--accent-amber); color:var(--accent-amber);">
+        FACILITY MANAGEMENT // INERGEN GAS &amp; HOT/COLD AISLES
+      </div>
+      <h2 class="comic-title">THE <span class="neon-green">LOCKED CAGES</span> &amp; BMS</h2>
+      <p class="scene-lead">
+        Through the mantrap, Aguslavski enters the inner sanctum. Clean-agent fire suppression nozzles (Inergen gas) line the ceiling—designed to extinguish flames without damaging electronic circuits or asphyxiating staff. The racks stand inside heavy steel cages, cooled by optimized Hot/Cold aisle containment.
+      </p>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Building Management Solutions (BMS)</span></h3>
+          <div class="speech-bubble">
+            "Temperature: 20°C. Humidity: 45%. Water mist systems kill servers; that's why we use gas fire suppression. And these racks aren't open—every server cabinet requires a dedicated physical key and audit log. Defense in depth from the grass perimeter down to the CPU heat sink."
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card facility">
+        <div class="char-avatar">BMS</div>
+        <div class="char-meta">
+          <h3>FACILITY BMS <span class="char-role">Environmental Sensors &amp; UPS Backup</span></h3>
+          <div class="speech-bubble">
+            "Dual redundant UPS battery banks active. Diesel generator fuel reserves at 100%. Even if the municipal power grid goes black, the Handshake Saga stays online with zero downtime."
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-amber);">
+        <h4>🛡️ SECURITY+ PHYSICAL SECURITY FLASHCARDS</h4>
+        <p>
+          <strong>Mantrap (Access Portal):</strong> A specialized small room with two interlocking doors where the first door must close and lock before the second door opens. Prevents <em>tailgating</em> (unauthorized person following an authorized person) and <em>piggybacking</em>.<br>
+          <strong>Hot &amp; Cold Aisles:</strong> Server racks positioned so cool air intakes face each other (cold aisle) and hot exhaust air vents out the back (hot aisle), maximizing HVAC cooling efficiency and preventing thermal shutdowns.<br>
+          <strong>Clean Agent Suppression:</strong> Chemical/inert gas extinguishing systems (Inergen, FM-200) that displace oxygen to snuff electrical fires without water spray.
+        </p>
+      </div>
+    </section>
+
+    <!-- LIVE CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="FACILITY CONTROL ROOM // BMS TERMINAL">
+      <div class="dk-badge">EPISODE 5 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-green">CONTROL ROOM CONSOLE</span></h2>
+      <p class="scene-lead">
+        Audit facility telemetry, verify mantrap interlocking states, or run environmental BMS checks:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('audit-mantrap')">audit-mantrap</button>
+        <button class="cmd-chip" onclick="runCmd('bms-environment')">bms-environment</button>
+        <button class="cmd-chip" onclick="runCmd('power-ups-status')">power-ups-status</button>
+        <button class="cmd-chip" onclick="runCmd('tailgating-alarm')">tailgating-alarm</button>
+        <button class="cmd-chip" onclick="runCmd('help')">help</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">knight@bms-operations: ~/facility-security</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">Facility Control System initialized: GOGGS_CENTRAL_VAULT_V5</div>
+          <div class="log dim">Type 'help' to review facility physical security commands.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- Next Mission Launch Panel -->
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%); border: 2px solid #10b981; border-radius: 14px; padding: 2rem; text-align: center; margin-top: 3rem; box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);">
+      <div style="font-family: 'Bangers', cursive; font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; letter-spacing: 0.05em;">MISSION 05 ACCOMPLISHED!</div>
+      <p style="color: #94a3b8; font-size: 0.95rem;">Protocol milestones verified. Clearance advanced for the next segment.</p>
+      <a href="handshake_saga_episode_6.html" onclick="saveEpProgress()" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; background: #10b981; color: #000; font-family: 'Fira Code', monospace; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.75rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+        ENGAGE EPISODE 6: THE AUDIT, THE APT & THE HONEYPOT →
+      </a>
+    </div>
+    
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1080, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    let currentMantrapStage = 1;
+    function setMantrapStage(stage) {
+      currentMantrapStage = stage;
+      const oDoor = document.getElementById('outerDoor');
+      const oState = document.getElementById('outerState');
+      const iDoor = document.getElementById('innerDoor');
+      const iState = document.getElementById('innerState');
+      const aState = document.getElementById('airlockState');
+      const bioStatus = document.getElementById('bioStatus');
+      const nar = document.getElementById('mantrapNarrative');
+
+      const b1 = document.getElementById('btnM1');
+      const b2 = document.getElementById('btnM2');
+      const b3 = document.getElementById('btnM3');
+
+      b1.classList.remove('active');
+      b2.classList.remove('active');
+      b3.classList.remove('active');
+
+      if (stage === 1) {
+        b1.classList.add('active');
+        oDoor.className = 'door-unit unlocked';
+        oState.innerText = 'UNLOCKED';
+        iDoor.className = 'door-unit locked';
+        iState.innerText = 'LOCKED';
+        aState.innerText = 'OUTER PORTAL OPEN';
+        aState.style.color = '#38bdf8';
+        bioStatus.innerText = 'STANDBY';
+        bioStatus.style.color = '#f59e0b';
+        nar.innerHTML = '<strong>Stage 1/3 (Outer Access):</strong> Outer door unlocks with RFID smart card. Aguslavski steps into the chamber. Inner door remains bolted shut to ensure an airlock seal.';
+        playTone(480, 0.08);
+      } else if (stage === 2) {
+        b2.classList.add('active');
+        oDoor.className = 'door-unit locked';
+        oState.innerText = 'LOCKED';
+        iDoor.className = 'door-unit locked';
+        iState.innerText = 'LOCKED';
+        aState.innerText = 'CHAMBER INTERLOCK ACTIVE';
+        aState.style.color = '#f59e0b';
+        bioStatus.innerText = 'RETINA & FINGERPRINT MATCHED';
+        bioStatus.style.color = '#10b981';
+        nar.innerHTML = '<strong>Stage 2/3 (Chamber Verification):</strong> Outer door clicks shut and locks! BOTH doors are now locked. Pressure and weight sensors verify exactly ONE person is present. Biometric scan passes!';
+        playTone(680, 0.08);
+      } else {
+        b3.classList.add('active');
+        oDoor.className = 'door-unit locked';
+        oState.innerText = 'LOCKED';
+        iDoor.className = 'door-unit unlocked';
+        iState.innerText = 'UNLOCKED';
+        aState.innerText = 'INNER VAULT CLEARED';
+        aState.style.color = '#10b981';
+        bioStatus.innerText = 'ACCESS GRANTED';
+        bioStatus.style.color = '#10b981';
+        nar.innerHTML = '<strong>Stage 3/3 (Vault Entry):</strong> Inner door unlocks with a hiss of pneumatic pressure. Aguslavski enters the climate-controlled server room. Outer door remains locked behind him!';
+        playTone(920, 0.12);
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin Mantrap
+      const trigger = document.getElementById('mantrapTrigger');
+      const rect = trigger.getBoundingClientRect();
+      const total = trigger.offsetHeight - window.innerHeight;
+
+      if (rect.top <= 80 && rect.bottom >= window.innerHeight * 0.5) {
+        const scrolledDistance = Math.max(0, 80 - rect.top);
+        const p = Math.min(1, scrolledDistance / (total > 0 ? total : 1));
+
+        if (p < 0.35 && currentMantrapStage !== 1) {
+          setMantrapStage(1);
+        } else if (p >= 0.35 && p < 0.70 && currentMantrapStage !== 2) {
+          setMantrapStage(2);
+        } else if (p >= 0.70 && currentMantrapStage !== 3) {
+          setMantrapStage(3);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(560, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-green);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'audit-mantrap') {
+        res.innerHTML = `
+          [MANTRAP AIRLOCK CONTROLLER TELEMETRY]<br>
+          * Outer Portal: SECURED (Magnetic Lock: 1200 lbs hold force)<br>
+          * Inner Portal: SECURED<br>
+          * Anti-Tailgating Floor Sensor: 0 Overweight Anomalies<br>
+          <span style="color:var(--accent-green);">* Interlock Logic: ENFORCED (Both doors impossible to open concurrently)</span>
+        `;
+      } else if (low === 'bms-environment') {
+        res.innerHTML = `
+          [BUILDING MANAGEMENT SOLUTIONS (BMS) TELEMETRY]<br>
+          * Cold Aisle Intake Temp: 20.4°C [OPTIMAL]<br>
+          * Hot Aisle Exhaust Temp: 32.8°C [NORMAL DISSIPATION]<br>
+          * Relative Humidity: 46% (Static electricity risk: LOW)<br>
+          * Fire Suppression: Inergen Gas Cylinders @ 300 Bar [ARMED]
+        `;
+      } else if (low === 'power-ups-status') {
+        res.innerHTML = `
+          [FACILITY POWER &amp; UPS AUDIT]<br>
+          * Main Feed: National Grid (Dual Substation Redundancy)<br>
+          * UPS Battery Bank: 100% Charged (Runtime at full load: 45 mins)<br>
+          * Diesel Generator: Auto-Transfer Switch READY (Tank: 5,000L)
+        `;
+      } else if (low === 'tailgating-alarm') {
+        res.innerHTML = `
+          <span style="color:var(--accent-red);">[SIMULATING INCIDENT: TAILGATING DETECTED]</span><br>
+          * Event: Second individual stepped into chamber before outer door sealed.<br>
+          * Response: Interlock lockdown triggered. Both doors bolted.<br>
+          * Action: CCTV camera 04 auto-zoomed. Control Room Operator notified.
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 5 diagnostics:<br>
+          - <code>audit-mantrap</code>: Verify two-door airlock &amp; interlock state<br>
+          - <code>bms-environment</code>: Check hot/cold aisle temperatures &amp; humidity<br>
+          - <code>power-ups-status</code>: Review battery backup and diesel generator runtime<br>
+          - <code>tailgating-alarm</code>: Test incident response for piggybacking violations<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  
+    function saveEpProgress() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(5)) {
+          list.push(5);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+    
+  </script>
+</body>
+</html>

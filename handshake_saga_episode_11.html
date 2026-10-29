@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 11: The World Wide Wire Tour (Grand Finale)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #020308;
+      --bg-panel: #060a18;
+      --bg-card: #0b1226;
+      --border-glow: #1a2a52;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-gold: #fbbf24;
+      --accent-ocean: #0284c7;
+      --accent-starlink: #e0e7ff;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(2, 3, 8, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid var(--accent-gold);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      color: var(--accent-gold);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-btn {
+      background: #0b1226;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .sound-btn.active {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-ocean), var(--accent-cyan), var(--accent-gold));
+      box-shadow: 0 0 10px var(--accent-gold);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-gold);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-gold {
+      color: var(--accent-gold);
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    }
+
+    .comic-title span.neon-ocean {
+      color: var(--accent-ocean);
+      text-shadow: 0 0 20px rgba(2, 132, 199, 0.6);
+    }
+
+    .comic-title span.neon-cyan {
+      color: var(--accent-cyan);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #040713;
+      border-left: 4px solid var(--accent-gold);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-gold);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.switch { border-left: 5px solid var(--accent-purple); }
+    .char-card.producer { border-left: 5px solid var(--accent-gold); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.producer .char-avatar {
+      background: rgba(251, 191, 36, 0.12);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    .char-card.switch .char-avatar {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE PLANETARY TOUR */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 240vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 75px;
+      background: #040816;
+      border: 2px solid var(--accent-gold);
+      border-radius: 14px;
+      padding: 2rem;
+      box-shadow: 0 0 45px rgba(251, 191, 36, 0.2);
+      min-height: 510px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .tour-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .globe-display {
+      background: #020308;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .globe-header {
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glow);
+      padding-bottom: 0.5rem;
+    }
+
+    .globe-core {
+      text-align: center;
+      padding: 1.25rem;
+      border: 2px dashed rgba(251, 191, 36, 0.4);
+      border-radius: 10px;
+      background: rgba(251, 191, 36, 0.04);
+      margin: 1rem 0;
+      transition: all 0.3s ease;
+    }
+
+    .globe-title {
+      font-family: var(--comic-font);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+
+    .globe-meta {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.25rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-gold);
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(251, 191, 36, 0.2);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #020308;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #070c1e;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #060a18;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-gold);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-gold);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .tour-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 11</span> THE WORLD WIDE WIRE TOUR // GRAND FINALE
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" style="background:#0d162e; border:1px solid #1a2a50; color:#94a3b8; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.75rem; font-family:'Fira Code', monospace; text-decoration:none;">⊞ HUB</a>
+      <button class="sound-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE GLOBAL STADIUM -->
+    <section class="scene-panel" data-stamp="PLANET EARTH // GLOBAL OPTICAL BACKBONE">
+      <div class="dk-badge">GLOBAL INFRASTRUCTURE // SUBSEA FIBER, CDNs, LEO SATELLITES &amp; BGP PEERING</div>
+      <h1 class="comic-title">THE <span class="neon-gold">WORLD WIDE WIRE</span> TOUR</h1>
+      <p class="scene-lead">
+        No more scripts. No more soundstages. Mike Foyta steps to the center console, takes a sip of coffee, and flips the main circuit breakers. The entire global internet is our concert hall! From the bottom of the Mariana Trench to Low Earth Orbit, Aguslavski, Treasury Knight, Lady Switch, and Madame Router launch the live planetary tour.
+      </p>
+
+      <div class="char-card producer">
+        <div class="char-avatar">MF</div>
+        <div class="char-meta">
+          <h3>MIKE FOYTA <span class="char-role">Executive Producer // Director of Operations</span></h3>
+          <div class="speech-bubble">
+            "They thought networking was just boxes in a dusty closet. They were wrong. Networking is the pulsing nervous system of human civilization. We've scaled from 1 byte to the planetary mesh. Cue the submarine laser amplifiers!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">Global Optical Courier</span></h3>
+          <div class="speech-bubble">
+            "I'm riding Dense Wavelength Division Multiplexing (DWDM) pulses through glass tubes thinner than a human hair under 17,000 feet of Atlantic ocean! 160 Terabits per second! Let's rock the planet!"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // THE FOUR TIERS OF THE GLOBAL INTERNET</h4>
+        <p>
+          <strong>1. Subsea Fiber (The Abyss):</strong> Over 99% of international data travels via transoceanic fiber-optic cables (like MAREA), not satellites.<br>
+          <strong>2. Edge CDNs (Tokyo &amp; Beyond):</strong> Replicating content locally to serve users in &lt;10ms, eliminating transoceanic round-trip latency.<br>
+          <strong>3. LEO Satellite Constellations (The Sky):</strong> Starlink constellations orbiting at ~550km with laser cross-links delivering low-latency broadband to the polar caps.<br>
+          <strong>4. Internet Exchange Points (IXPs &amp; BGP):</strong> Giant carrier-neutral peering hubs (DE-CIX Frankfurt, LINX London) where autonomous systems swap traffic settlement-free.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING THE PLANETARY TOUR STAGES -->
+    <div class="scroll-pin-wrapper" id="tourTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-gold); color:var(--accent-gold);">
+            SCROLL DOWN OR CLICK TOUR STOPS
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            PLANETARY HOP: <span style="color: var(--accent-gold);">THE 4 GLOBAL STOPS</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel or tap stages. Travel across the Atlantic trench, cache at the Tokyo edge, beam to LEO orbit, and peer at DE-CIX Frankfurt!
+          </p>
+        </div>
+
+        <div class="tour-grid">
+          <div class="globe-display">
+            <div class="globe-header">
+              <span>TELEMETRY BEACON // GLOBAL ROUTE</span>
+              <span id="tourBeacon" style="color:var(--accent-ocean);">TRANSOCEANIC ACTIVE</span>
+            </div>
+            <div class="globe-core" id="globeBox">
+              <div class="globe-title" id="tourTitle" style="color:var(--accent-ocean);">STOP 1: THE ABYSS</div>
+              <div class="globe-meta" id="tourMeta">MAREA CABLE // VIRGINIA &rarr; BILBAO (66ms)</div>
+            </div>
+            <div style="font-family:var(--code-font); font-size:0.75rem; color:var(--text-dim);">
+              MEDIUM: <span id="tourMedium" style="color:var(--accent-ocean); font-weight:700;">SUBSEA DWDM FIBER</span> | LATENCY: <span id="tourPing" style="color:var(--accent-green); font-weight:700;">66 ms</span>
+            </div>
+          </div>
+
+          <div class="stage-narrative" id="tourNarrative">
+            <strong>Tour Stop 1 (The Abyss):</strong> 17,000 feet deep on the Atlantic seabed. Aguslavski surfs 160 Terabits/sec of infrared light pulses through the MAREA subsea cable, dodging curious deep-sea sharks attracted to the magnetic repeaters!
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnT1" onclick="setTourStage(1)">[1] Subsea Trench</button>
+            <button class="stage-btn" id="btnT2" onclick="setTourStage(2)">[2] Tokyo Edge CDN</button>
+            <button class="stage-btn" id="btnT3" onclick="setTourStage(3)">[3] Starlink LEO Orbit</button>
+            <button class="stage-btn" id="btnT4" onclick="setTourStage(4)">[4] DE-CIX Frankfurt BGP</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: THE FINAL CURTAIN CALL -->
+    <section class="scene-panel" data-stamp="THE AFTER-PARTY // 127.0.0.1 (LOCALHOST)">
+      <div class="dk-badge" style="border-color:var(--accent-gold); color:var(--accent-gold);">
+        CURTAIN CALL // LOCALHOST: HOME
+      </div>
+      <h2 class="comic-title">HELLO, WORLD! <span class="neon-gold">MISSION ACCOMPLISHED</span></h2>
+      <p class="scene-lead">
+        The stadium cheers echo across every autonomous system on the planet. Millions of handshakes complete in unison: SYN. SYN-ACK. ACK. Lady Switch holds down Layer 2 with Spanning Tree precision, Madame Router signs the BGP routes, Treasury Knight inspects the logs, and Aguslavski takes center stage with the microphone.
+      </p>
+
+      <div class="char-card switch">
+        <div class="char-avatar">LS</div>
+        <div class="char-meta">
+          <h3>LADY SWITCH &amp; MADAME ROUTER <span class="char-role">The Core Orchestrators</span></h3>
+          <div class="speech-bubble">
+            "Broadcast domains clean. MAC tables synchronized. Zero routing loops across the globe. Merry Christmas, Gateway—the network is stable."
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Final Verification</span></h3>
+          <div class="speech-bubble">
+            "All threats neutralized. Clearances logged. Glitch quarantined, Zero audited, the Q-Bit trapped in the lattice, and the Comic Sans bias pruned. The network is built on trust, but it survives on verification. Never stop checking the logs."
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card aguslavski">
+        <div class="char-avatar">AG</div>
+        <div class="char-meta">
+          <h3>AGUSLAVSKI <span class="char-role">Agent Payload // The Legend</span></h3>
+          <div class="speech-bubble">
+            (Pulls down sunglasses, raises the mic to the roaring crowd) "Hello, World! Logout complete. Destination: Localhost (127.0.0.1). Home." (DROPS THE MIC)
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-gold);">
+        <h4>🏆 THE MASTER EXECUTIVE SUMMARY // 11-EPISODE ARCHITECTURE</h4>
+        <p>
+          • <strong>Ep 1:</strong> Encapsulation &amp; The OSI Model (Layer 7 down to Layer 1)<br>
+          • <strong>Ep 2:</strong> AAA Architecture &amp; The Intranet Lounge (RADIUS vs TACACS+)<br>
+          • <strong>Ep 3:</strong> The Gateway Underworld (RFC 1918, PAT Translation &amp; QoS)<br>
+          • <strong>Ep 4:</strong> The Great Sequencing (TCP Buffering, SACK &amp; Retransmission)<br>
+          • <strong>Ep 5:</strong> The Physical Fortress (Defense-in-Depth, Mantraps &amp; Inergen BMS)<br>
+          • <strong>Ep 6:</strong> The Security Audit (White/Black Hats, Honeypots &amp; Living off the Land)<br>
+          • <strong>Ep 7:</strong> The Cloud Migration (P2V, vMotion, Docker Containers &amp; K8s)<br>
+          • <strong>Ep 8:</strong> The Evil Twin (Wireless 802.11 Spoofing, Safe Mode &amp; WPA3)<br>
+          • <strong>Ep 9:</strong> The Quantum Apocalypse (Shor's Algorithm &amp; CRYSTALS-Kyber PQC)<br>
+          • <strong>Ep 10:</strong> The Neural Link (400G InfiniBand, RDMA &amp; Explainable AI XAI)<br>
+          • <strong>Ep 11:</strong> The World Wide Wire Tour (Subsea DWDM, CDNs, Starlink &amp; BGP Peering)
+        </p>
+      </div>
+    </section>
+
+    <!-- LIVE CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="MASTER ROUTING CONSOLE // GLOBAL BACKBONE">
+      <div class="dk-badge">EPISODE 11 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-gold">GLOBAL ROUTING CONSOLE</span></h2>
+      <p class="scene-lead">
+        Execute global BGP peering audits, trace submarine cable paths, or ping localhost:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('traceroute-marea')">traceroute-marea</button>
+        <button class="cmd-chip" onclick="runCmd('bgp-peering-summary')">bgp-peering-summary</button>
+        <button class="cmd-chip" onclick="runCmd('starlink-telemetry')">starlink-telemetry</button>
+        <button class="cmd-chip" onclick="runCmd('ping 127.0.0.1')">ping 127.0.0.1</button>
+        <button class="cmd-chip" onclick="runCmd('oscar-reward')">oscar-reward</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">foyta@global-core: ~/handshake-tour</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">Global Backbone BGP Router initialized: AS64512_DECIX_FRANKFURT</div>
+          <div class="log dim">Type 'help' to review final tour diagnostics.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- Grand Finale Completion Panel -->
+    <div style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(251, 191, 36, 0.2) 100%); border: 2px solid #fbbf24; border-radius: 14px; padding: 2rem; text-align: center; margin-top: 3rem; box-shadow: 0 0 35px rgba(251, 191, 36, 0.25);">
+      <div style="font-family: 'Bangers', cursive; font-size: 2.2rem; color: #fbbf24; margin-bottom: 0.5rem; letter-spacing: 0.05em;">TOUR COMPLETE! ALL 11 MISSIONS CLEARED!</div>
+      <p style="color: #94a3b8; font-size: 0.95rem;">You have journeyed from Layer 7 raw bytes to the planetary optical mesh. All certifications and protocols mastered.</p>
+      <a href="index.html?completed=11" onclick="saveEpProgress()" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; background: #fbbf24; color: #000; font-family: 'Fira Code', monospace; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.75rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);">
+        RETURN TO COMMAND HUB &amp; CLAIM HONORS →
+      </a>
+    </div>
+    
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1280, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    let currentTourStage = 1;
+    function setTourStage(stage) {
+      currentTourStage = stage;
+      const beacon = document.getElementById('tourBeacon');
+      const title = document.getElementById('tourTitle');
+      const meta = document.getElementById('tourMeta');
+      const medium = document.getElementById('tourMedium');
+      const ping = document.getElementById('tourPing');
+      const nar = document.getElementById('tourNarrative');
+      const box = document.getElementById('globeBox');
+
+      const b1 = document.getElementById('btnT1');
+      const b2 = document.getElementById('btnT2');
+      const b3 = document.getElementById('btnT3');
+      const b4 = document.getElementById('btnT4');
+
+      b1.classList.remove('active');
+      b2.classList.remove('active');
+      b3.classList.remove('active');
+      b4.classList.remove('active');
+
+      if (stage === 1) {
+        b1.classList.add('active');
+        beacon.innerText = 'TRANSOCEANIC ACTIVE';
+        beacon.style.color = '#0284c7';
+        title.innerText = 'STOP 1: THE ABYSS';
+        title.style.color = '#0284c7';
+        meta.innerText = 'MAREA CABLE // VIRGINIA &rarr; BILBAO (66ms)';
+        medium.innerText = 'SUBSEA DWDM FIBER';
+        medium.style.color = '#0284c7';
+        ping.innerText = '66 ms';
+        box.style.borderColor = 'rgba(2, 132, 199, 0.4)';
+        box.style.background = 'rgba(2, 132, 199, 0.05)';
+        nar.innerHTML = '<strong>Tour Stop 1 (The Abyss):</strong> 17,000 feet deep on the Atlantic seabed. Aguslavski surfs 160 Terabits/sec of infrared light pulses through the MAREA subsea cable, dodging curious deep-sea sharks attracted to the magnetic repeaters!';
+        playTone(440, 0.08);
+      } else if (stage === 2) {
+        b2.classList.add('active');
+        beacon.innerText = 'EDGE CACHE POPPING';
+        beacon.style.color = '#10b981';
+        title.innerText = 'STOP 2: TOKYO EDGE CDN';
+        title.style.color = '#10b981';
+        meta.innerText = 'CLOUDFLARE/AKAMAI POP // LOCAL CACHE REPLICATION';
+        medium.innerText = 'ANYCAST REVERSE PROXY';
+        medium.style.color = '#10b981';
+        ping.innerText = '4.2 ms';
+        box.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        box.style.background = 'rgba(16, 185, 129, 0.05)';
+        nar.innerHTML = '<strong>Tour Stop 2 (The Edge):</strong> 50,000 screaming concert fans in Tokyo stream the live payload simultaneously! Instead of round-tripping to London, Aguslavski caches himself at the edge node—serving requests in 4 milliseconds!';
+        playTone(660, 0.08);
+      } else if (stage === 3) {
+        b3.classList.add('active');
+        beacon.innerText = 'LEO CONSTELLATION';
+        beacon.style.color = '#38bdf8';
+        title.innerText = 'STOP 3: ANTARCTICA SKY';
+        title.style.color = '#38bdf8';
+        meta.innerText = 'STARLINK ORBIT // LASER INTER-SATELLITE CROSSLINKS';
+        medium.innerText = 'LEO OPTICAL SATELLITE';
+        medium.style.color = '#38bdf8';
+        ping.innerText = '28 ms';
+        box.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+        box.style.background = 'rgba(56, 189, 248, 0.05)';
+        nar.innerHTML = '<strong>Tour Stop 3 (The Sky):</strong> Zero ground cables across the polar ice cap! Aguslavski beams straight up into Low Earth Orbit, hopping from satellite to satellite via vacuum laser links at the speed of light!';
+        playTone(880, 0.08);
+      } else {
+        b4.classList.add('active');
+        beacon.innerText = 'BGP PEERING VIP';
+        beacon.style.color = '#fbbf24';
+        title.innerText = 'STOP 4: DE-CIX FRANKFURT';
+        title.style.color = '#fbbf24';
+        meta.innerText = 'THE WORLD’S LARGEST IXP // SETTLEMENT-FREE PEERING';
+        medium.innerText = 'BGP BORDER ROUTING';
+        medium.style.color = '#fbbf24';
+        ping.innerText = '1.1 ms';
+        box.style.borderColor = 'rgba(251, 191, 36, 0.4)';
+        box.style.background = 'rgba(251, 191, 36, 0.05)';
+        nar.innerHTML = '<strong>Tour Stop 4 (The IXP Finale):</strong> The Backstage VIP room! Tier 1 carriers, Google, Netflix, and AWS meet in Frankfurt to swap multi-terabit traffic settlement-free! The global handshake is complete!';
+        playTone(1100, 0.15);
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin Tour
+      const trigger = document.getElementById('tourTrigger');
+      const rect = trigger.getBoundingClientRect();
+      const total = trigger.offsetHeight - window.innerHeight;
+
+      if (rect.top <= 80 && rect.bottom >= window.innerHeight * 0.5) {
+        const scrolledDistance = Math.max(0, 80 - rect.top);
+        const p = Math.min(1, scrolledDistance / (total > 0 ? total : 1));
+
+        if (p < 0.25 && currentTourStage !== 1) {
+          setTourStage(1);
+        } else if (p >= 0.25 && p < 0.50 && currentTourStage !== 2) {
+          setTourStage(2);
+        } else if (p >= 0.50 && p < 0.75 && currentTourStage !== 3) {
+          setTourStage(3);
+        } else if (p >= 0.75 && currentTourStage !== 4) {
+          setTourStage(4);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(600, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-gold);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'traceroute-marea') {
+        res.innerHTML = `
+          traceroute to bilbao-gw.spain (84.16.0.1), 30 hops max, 60 byte packets<br>
+          1  192.168.101.1 (madame-router.local)  0.42 ms<br>
+          2  203.0.113.1 (the-forger-pat.isp)  2.11 ms<br>
+          3  virginia-beach-landing-station.marea  12.44 ms<br>
+          4  atlantic-subsea-repeater-14.ocean  38.20 ms<br>
+          5  bilbao-landing-station.spain  66.12 ms [TRANSOCEANIC DROP COMPLETE]
+        `;
+      } else if (low === 'bgp-peering-summary') {
+        res.innerHTML = `
+          [BGP AUTONOMOUS SYSTEM ROUTING TABLE]<br>
+          BGP router identifier: 217.115.240.1, local AS number: 64512<br>
+          Neighbor        V    AS    MsgRcvd MsgSent   TblVer  Up/Down    State/PfxRcd<br>
+          AS15169 (Google) 4 15169   984120  984120        1  14w2d      Established (850,000)<br>
+          AS2906 (Netflix) 4  2906   412090  412090        1  14w2d      Established (120,000)<br>
+          <span style="color:var(--accent-green);">* Peering Agreement: Settlement-Free Bilateral Exchange</span>
+        `;
+      } else if (low === 'starlink-telemetry') {
+        res.innerHTML = `
+          [LOW EARTH ORBIT CONSTELLATION TELEMETRY]<br>
+          * Altitude: 550 km (LEO vs 35,786 km GEO)<br>
+          * Optical Inter-Satellite Links (ISL): Locked (Infrared Lasers)<br>
+          * Downlink Frequency: Ku/Ka Band &rarr; Ground Terminal Antarctica (Ping: 27.8ms)
+        `;
+      } else if (low === 'ping 127.0.0.1') {
+        res.innerHTML = `
+          Pinging 127.0.0.1 with 32 bytes of data:<br>
+          Reply from 127.0.0.1: bytes=32 time&lt;1ms TTL=128<br>
+          Reply from 127.0.0.1: bytes=32 time&lt;1ms TTL=128<br>
+          <span style="color:var(--accent-gold);">--- Localhost: Home. Loopback Stack 100% Operational. ---</span>
+        `;
+      } else if (low === 'oscar-reward') {
+        res.innerHTML = `
+          <span style="color:var(--accent-gold);">========================================================</span><br>
+          <span style="color:var(--accent-gold);">🏆 OSCAR ACADEMY REWARD: MASTER PRODUCER MIKE FOYTA 🏆</span><br>
+          * Production: The Handshake Saga (11-Episode Masterpiece)<br>
+          * Box Office Gross: 128 Billion Packets<br>
+          * Global Availability: 99.999% (Five Nines)<br>
+          * Certification Syllabus: 100% COVERED &amp; COMPLIANT.<br>
+          <span style="color:var(--accent-gold);">========================================================</span>
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 11 diagnostics:<br>
+          - <code>traceroute-marea</code>: Trace transoceanic optical subsea path<br>
+          - <code>bgp-peering-summary</code>: View global DE-CIX autonomous system peering<br>
+          - <code>starlink-telemetry</code>: Inspect low earth orbit satellite laser links<br>
+          - <code>ping 127.0.0.1</code>: Test loopback return to Localhost (Home)<br>
+          - <code>oscar-reward</code>: Present the Grand Finale Producer Trophy<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  
+    function saveEpProgress() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(11)) {
+          list.push(11);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+    
+  </script>
+</body>
+</html>

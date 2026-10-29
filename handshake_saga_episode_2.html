@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Episode 2: The Intranet Lounge & The Rogue Ping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #05070e;
+      --bg-panel: #0a0f1d;
+      --bg-card: #10172c;
+      --border-glow: #1e2945;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-magenta: #ec4899;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: rgba(5, 7, 14, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-magenta);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid var(--accent-magenta);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sound-btn {
+      background: #0d1527;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .sound-btn.active {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .progress-track {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+      width: 100%;
+      z-index: 999;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-magenta), var(--accent-purple), var(--accent-red));
+      box-shadow: 0 0 10px var(--accent-magenta);
+    }
+
+    .comic-wrapper {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 1.25rem 5rem;
+    }
+
+    /* Scene Panels */
+    .scene-panel {
+      position: relative;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: all 0.3s ease;
+    }
+
+    .scene-panel:hover {
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+
+    .scene-panel::before {
+      content: attr(data-stamp);
+      position: absolute;
+      top: -14px;
+      left: 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-amber);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.8rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .comic-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.2rem, 5.5vw, 3.4rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.8rem 0 0.5rem;
+      color: #fff;
+    }
+
+    .comic-title span.neon-pink {
+      color: var(--accent-magenta);
+      text-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+    }
+
+    .comic-title span.neon-red {
+      color: var(--accent-red);
+      text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .scene-lead {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+    }
+
+    /* DK Visual Callout Cards */
+    .dk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid var(--accent-purple);
+      color: var(--accent-purple);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .dk-box {
+      background: #090e1a;
+      border-left: 4px solid var(--accent-magenta);
+      border-radius: 0 10px 10px 0;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+    }
+
+    .dk-box h4 {
+      font-family: var(--code-font);
+      color: var(--accent-magenta);
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dk-box p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+
+    /* Character Cards */
+    .char-card {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      padding: 1.35rem;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .char-card.aguslavski { border-left: 5px solid var(--accent-cyan); }
+    .char-card.knight { border-left: 5px solid var(--accent-amber); }
+    .char-card.radius { border-left: 5px solid var(--accent-magenta); }
+    .char-card.glitch { border-left: 5px solid var(--accent-red); }
+    .char-card.tacacs { border-left: 5px solid var(--accent-purple); }
+
+    .char-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: var(--code-font);
+      font-size: 1.35rem;
+      border: 2px solid;
+    }
+
+    .char-card.radius .char-avatar {
+      background: rgba(236, 72, 153, 0.12);
+      border-color: var(--accent-magenta);
+      color: var(--accent-magenta);
+    }
+
+    .char-card.tacacs .char-avatar {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    .char-card.glitch .char-avatar {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    .char-card.aguslavski .char-avatar {
+      background: rgba(0, 240, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .char-card.knight .char-avatar {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
+    }
+
+    .char-meta h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .char-role {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .speech-bubble {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* SCROLL PIN SEQUENCE: THE VELVET ROPE LOCK */
+    .scroll-pin-wrapper {
+      position: relative;
+      height: 180vh;
+      margin-bottom: 4rem;
+    }
+
+    .sticky-viewport {
+      position: sticky;
+      top: 70px;
+      background: #080d1a;
+      border: 2px solid var(--accent-magenta);
+      border-radius: 14px;
+      padding: 1.75rem;
+      box-shadow: 0 0 45px rgba(236, 72, 153, 0.2);
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+
+    .club-stage-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-top: 0.8rem;
+    }
+
+    .ledger-monitor {
+      background: #040711;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .golden-book-header {
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      color: var(--accent-amber);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-glow);
+      padding-bottom: 0.4rem;
+    }
+
+    .ticket-display {
+      text-align: center;
+      padding: 1rem;
+      border: 2px dashed rgba(236, 72, 153, 0.4);
+      border-radius: 10px;
+      background: rgba(236, 72, 153, 0.05);
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .ticket-title {
+      font-family: var(--comic-font);
+      font-size: 1.8rem;
+      color: var(--accent-magenta);
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+
+    .ticket-meta {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    .stage-narrative {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.2rem;
+      border-radius: 10px;
+      border-left: 4px solid var(--accent-amber);
+      line-height: 1.5;
+    }
+
+    .manual-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .stage-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .stage-btn.active {
+      background: rgba(236, 72, 153, 0.2);
+      border-color: var(--accent-magenta);
+      color: var(--accent-magenta);
+      box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+    }
+
+    /* RED TEAM GLITCH TAKEOVER */
+    .glitch-zone {
+      position: relative;
+      background: #110508;
+      border: 2px solid var(--accent-red);
+      border-radius: 14px;
+      padding: 2.25rem;
+      margin-bottom: 4rem;
+      box-shadow: 0 0 35px rgba(239, 68, 68, 0.2);
+    }
+
+    .glitch-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--accent-red);
+      color: var(--accent-red);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .wire-cut-alert {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid var(--accent-red);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      color: #fca5a5;
+      margin: 1.25rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Live Interactive Terminal */
+    .lab-terminal {
+      background: #03050c;
+      border: 1px solid #1a2744;
+      border-radius: 10px;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .terminal-head {
+      background: #091024;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1a2744;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .term-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ef4444; }
+    .term-dot.yellow { background: #f59e0b; }
+    .term-dot.green { background: #10b981; }
+
+    .terminal-body {
+      padding: 1.25rem;
+      min-height: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      color: #38bdf8;
+    }
+
+    .terminal-body .log { margin-bottom: 0.45rem; }
+    .terminal-body .dim { color: var(--text-dim); }
+
+    .terminal-input-row {
+      display: flex;
+      border-top: 1px solid #1a2744;
+      background: #080d1e;
+    }
+
+    .terminal-prompt {
+      padding: 0.65rem 0.85rem;
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      padding: 0.65rem 0.5rem 0.65rem 0;
+    }
+
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .cmd-chip {
+      background: rgba(236, 72, 153, 0.1);
+      border: 1px solid var(--accent-magenta);
+      color: var(--accent-magenta);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .cmd-chip:hover {
+      background: var(--accent-magenta);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .club-stage-grid { grid-template-columns: 1fr; }
+      .comic-wrapper { padding-left: 1rem; padding-right: 1rem; }
+      .sticky-viewport { top: 60px; padding: 1.25rem; min-height: 440px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>EPISODE 2</span> THE INTRANET LOUNGE &amp; THE ROGUE PING
+    </div>
+    <div class="hud-controls">
+      <a href="index.html" style="background:#0d162e; border:1px solid #1a2a50; color:#94a3b8; padding:0.35rem 0.85rem; border-radius:6px; font-size:0.75rem; font-family:'Fira Code', monospace; text-decoration:none;">⊞ HUB</a>
+      <button class="sound-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressBar"></div>
+  </div>
+
+  <main class="comic-wrapper">
+
+    <!-- SCENE 1: THE NETWORK EDGE NIGHTCLUB -->
+    <section class="scene-panel" data-stamp="THE NETWORK EDGE // PORT 1812">
+      <div class="dk-badge">DOMAIN 4.0 // AAA ARCHITECTURE (RADIUS / TACACS+)</div>
+      <h1 class="comic-title">THE <span class="neon-pink">INTRANET LOUNGE</span></h1>
+      <p class="scene-lead">
+        The neon sign buzzes in magenta at the perimeter firewall. A massive queue of packets stretches out onto the public WAN. Standing before the velvet rope is Lady RADIUS, keeper of the Golden Directory, alongside Treasury Knight.
+      </p>
+
+      <div class="char-card radius">
+        <div class="char-avatar">LR</div>
+        <div class="char-meta">
+          <h3>LADY RADIUS <span class="char-role">Authentication &amp; Accounting Hostess // Port 1812/1813 UDP</span></h3>
+          <div class="speech-bubble">
+            "Welcome to the Lounge, darling. Nobody enters the Champagne Room (Database) without an entry in my Golden Book. Present your credentials. If you are who you claim to be, I'll stamp your Kerberos ticket. If not... you get dropped into the bit bucket."
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Bouncer &amp; Stateful Enforcement // Counter-Terrorism Clearance</span></h3>
+          <div class="speech-bubble">
+            "Line up single file. No tailgating through the mantrap. Lady RADIUS checks the identity (Authentication) and the permissions (Authorization). I make sure you don't sneak malicious shellcode under your coat."
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box">
+        <h4>📖 VISUAL ENCYCLOPEDIA NODE // THE AAA TRIAD</h4>
+        <p>
+          <strong>1. Authentication (Who are you?):</strong> Verification of username, password, certificates, or tokens.<br>
+          <strong>2. Authorization (What can you do?):</strong> Group policies determining VIP access vs. guest quarantine.<br>
+          <strong>3. Accounting (What did you do?):</strong> The timestamped tab tracking session duration, data transferred, and actions logged.
+        </p>
+      </div>
+    </section>
+
+    <!-- SCENE 2: SCROLL-PINNING VELVET ROPE AUDIT -->
+    <div class="scroll-pin-wrapper" id="radiusTrigger">
+      <div class="sticky-viewport">
+        <div>
+          <div class="dk-badge" style="border-color:var(--accent-amber); color:var(--accent-amber);">
+            SCROLL DOWN OR TAP STAGES TO AUDIT
+          </div>
+          <h2 style="font-family: var(--comic-font); font-size: 1.8rem; letter-spacing: 0.05em;">
+            THE VELVET ROPE: <span style="color: var(--accent-magenta);">KERBEROS TICKET-GRANTING</span>
+          </h2>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">
+            Turn the wheel, swipe down, or tap the stage buttons below. Watch Lady RADIUS audit Aguslavski's credentials.
+          </p>
+        </div>
+
+        <div class="club-stage-grid">
+          <div class="ledger-monitor" id="ledgerBox">
+            <div class="golden-book-header">
+              <span>LEDGER: ACTIVE DIRECTORY / LDAP</span>
+              <span id="ledgerStatus" style="color:var(--accent-amber);">CHALLENGING...</span>
+            </div>
+            <div class="ticket-display" id="ticketBox">
+              <div class="ticket-title" id="ticketBadge" style="color:var(--accent-cyan);">AUTH_REQUEST</div>
+              <div class="ticket-meta" id="ticketMeta">SUBJECT: AGUSLAVSKI // VERIFYING CREDENTIAL HASH</div>
+            </div>
+            <div style="font-family:var(--code-font); font-size:0.75rem; color:var(--text-dim);">
+              PORT: <span id="authPort" style="color:var(--accent-cyan); font-weight:700;">1812/UDP</span> | PROTOCOL: <span id="authProto" style="color:var(--accent-amber); font-weight:700;">RADIUS AUTH</span>
+            </div>
+          </div>
+
+          <div class="stage-narrative" id="radiusNarrative">
+            <strong>Stage 1/3 (Authentication):</strong> Lady RADIUS inspects the challenge handshake. Aguslavski proves his identity against Active Directory. Keep scrolling down or tap Stage 2...
+          </div>
+        </div>
+
+        <div>
+          <div class="manual-controls">
+            <button class="stage-btn active" id="btnR1" onclick="setRadiusStage(1)">[1] Auth Request</button>
+            <button class="stage-btn" id="btnR2" onclick="setRadiusStage(2)">[2] Kerberos TGT</button>
+            <button class="stage-btn" id="btnR3" onclick="setRadiusStage(3)">[3] Session Logged</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: THE ATTACK & TACACS+ RESCUE -->
+    <section class="glitch-zone">
+      <div class="glitch-badge">⚠️ RED TEAM STRIKE // WIRE SEVERED</div>
+      <h2 class="comic-title">ENTER <span class="neon-red">GLITCH</span> &amp; THE WIRE CUT</h2>
+      <p class="scene-lead">
+        A sharp shadow drops from the ceiling conduit. It’s GLITCH—a bitter, orphaned ICMP ping who was dropped by firewalls years ago. He unholsters a wire cutter and snips Lady RADIUS's unencrypted UDP line!
+      </p>
+
+      <div class="wire-cut-alert">
+        <span>⚡</span>
+        <div>
+          <strong>CRITICAL ALARM: RADIUS CONNECTION SEVERED (PORT 1812 UDP DEAD)</strong><br>
+          <span style="font-size:0.75rem; color:var(--text-dim);">Attacker attempting to force Fail-Open state to flood the Intranet.</span>
+        </div>
+      </div>
+
+      <div class="char-card glitch">
+        <div class="char-avatar">GL</div>
+        <div class="char-meta">
+          <h3>GLITCH <span class="char-role">The Discarded ICMP Ping // Botnet Herder</span></h3>
+          <div class="speech-bubble">
+            "They dropped me at the edge! They called my packets 'Junk Traffic'! Well, look who can't authenticate now. With Lady RADIUS offline, the doors have to open, right? Welcome to the zombie horde!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card tacacs">
+        <div class="char-avatar">T+</div>
+        <div class="char-meta">
+          <h3>TACACS+ <span class="char-role">The Strict Brother // Device Administration (Port 49 TCP)</span></h3>
+          <div class="speech-bubble">
+            "Not on my watch, kid. Lady RADIUS only encrypts the password—I encrypt the ENTIRE payload using TCP Port 49. I separate Authorization from Authentication. You cut the UDP wire, but my encrypted administrative tunnel is already live. Treasury Knight, bag him!"
+          </div>
+        </div>
+      </div>
+
+      <div class="char-card knight">
+        <div class="char-avatar">TK</div>
+        <div class="char-meta">
+          <h3>TREASURY KNIGHT <span class="char-role">Apprehension // Physical Restraint</span></h3>
+          <div class="speech-bubble">
+            "Got him pinned against the rack. Incident response logged: Glitch isolated in Quarantine VLAN 999. Aguslavski, your ticket is verified—take the fiber express down to the destination server!"
+          </div>
+        </div>
+      </div>
+
+      <div class="dk-box" style="border-left-color: var(--accent-red);">
+        <h4>🛡️ CCNA &amp; NETWORK+ EXAM SHOWDOWN // RADIUS VS TACACS+</h4>
+        <p>
+          <strong>RADIUS (Remote Authentication Dial-In User Service):</strong> Combines authentication and authorization. Encrypts ONLY the password. Uses UDP ports 1812/1813. Common for network access (802.1X, Wi-Fi).<br>
+          <strong>TACACS+ (Terminal Access Controller Access-Control System):</strong> Separates Authentication, Authorization, and Accounting. Encrypts the WHOLE session. Uses TCP port 49. Standard for router and switch device administration.
+        </p>
+      </div>
+    </section>
+
+    <!-- CLI SANDBOX -->
+    <section class="scene-panel" data-stamp="DIAGNOSTIC TERMINAL // AAA SUITE">
+      <div class="dk-badge">EPISODE 2 PRACTICAL LAB</div>
+      <h2 class="comic-title">THE <span class="neon-pink">SECURITY CONSOLE</span></h2>
+      <p class="scene-lead">
+        Execute protocol audits or test the AAA failover mechanics directly:
+      </p>
+
+      <div class="quick-chips">
+        <button class="cmd-chip" onclick="runCmd('audit-radius')">audit-radius</button>
+        <button class="cmd-chip" onclick="runCmd('tacacs-failover')">tacacs-failover</button>
+        <button class="cmd-chip" onclick="runCmd('inspect-glitch')">inspect-glitch</button>
+        <button class="cmd-chip" onclick="runCmd('kerberos-tgt')">kerberos-tgt</button>
+        <button class="cmd-chip" onclick="runCmd('help')">help</button>
+      </div>
+
+      <div class="lab-terminal">
+        <div class="terminal-head">
+          <div class="term-dots">
+            <span class="term-dot red"></span>
+            <span class="term-dot yellow"></span>
+            <span class="term-dot green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-dim);">knight@treasury-control: ~/aaa-gateway</span>
+        </div>
+        <div class="terminal-body" id="termOut">
+          <div class="log dim">AAA Security Node initialized: HM_TREASURY_EDGE_V2</div>
+          <div class="log dim">Type 'help' for incident response tools.</div>
+        </div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt">&gt;</span>
+          <input type="text" class="terminal-input" id="termIn" placeholder="type command..." onkeydown="handleTerm(event)">
+        </div>
+      </div>
+    </section>
+
+  
+    <!-- Next Mission Launch Panel -->
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.2) 100%); border: 2px solid #10b981; border-radius: 14px; padding: 2rem; text-align: center; margin-top: 3rem; box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);">
+      <div style="font-family: 'Bangers', cursive; font-size: 2rem; color: #10b981; margin-bottom: 0.5rem; letter-spacing: 0.05em;">MISSION 02 ACCOMPLISHED!</div>
+      <p style="color: #94a3b8; font-size: 0.95rem;">Protocol milestones verified. Clearance advanced for the next segment.</p>
+      <a href="handshake_saga_episode_3.html" onclick="saveEpProgress()" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none; background: #10b981; color: #000; font-family: 'Fira Code', monospace; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.75rem; border-radius: 8px; margin-top: 1rem; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+        ENGAGE EPISODE 3: THE GATEWAY UNDERWORLD & THE FORGER →
+      </a>
+    </div>
+    
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(980, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    let currentRadiusStage = 1;
+    function setRadiusStage(stage) {
+      currentRadiusStage = stage;
+      const badge = document.getElementById('ticketBadge');
+      const meta = document.getElementById('ticketMeta');
+      const nar = document.getElementById('radiusNarrative');
+      const status = document.getElementById('ledgerStatus');
+      const port = document.getElementById('authPort');
+      const proto = document.getElementById('authProto');
+      const ticketBox = document.getElementById('ticketBox');
+
+      const b1 = document.getElementById('btnR1');
+      const b2 = document.getElementById('btnR2');
+      const b3 = document.getElementById('btnR3');
+
+      if (b1 && b2 && b3) {
+        b1.classList.remove('active');
+        b2.classList.remove('active');
+        b3.classList.remove('active');
+      }
+
+      if (stage === 1) {
+        if (b1) b1.classList.add('active');
+        badge.innerText = 'AUTH_REQUEST';
+        badge.style.color = '#38bdf8';
+        meta.innerText = 'SUBJECT: AGUSLAVSKI // VERIFYING CREDENTIAL HASH';
+        status.innerText = 'CHALLENGING...';
+        status.style.color = '#f59e0b';
+        port.innerText = '1812/UDP';
+        port.style.color = '#38bdf8';
+        proto.innerText = 'RADIUS AUTH';
+        proto.style.color = '#f59e0b';
+        if (ticketBox) {
+          ticketBox.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+          ticketBox.style.background = 'rgba(56, 189, 248, 0.05)';
+        }
+        nar.innerHTML = '<strong>Stage 1/3 (Authentication):</strong> Lady RADIUS inspects the challenge handshake. Aguslavski proves his identity against Active Directory. Keep scrolling down or tap Stage 2...';
+        playTone(480, 0.08);
+      } else if (stage === 2) {
+        if (b2) b2.classList.add('active');
+        badge.innerText = 'TICKET: KERBEROS TGT';
+        badge.style.color = '#ec4899';
+        meta.innerText = 'ROLE: SENIOR COURIER // GROUP: ENTERPRISE_USERS';
+        status.innerText = 'TICKET ISSUED';
+        status.style.color = '#ec4899';
+        port.innerText = '88/TCP';
+        port.style.color = '#ec4899';
+        proto.innerText = 'KERBEROS KDC';
+        proto.style.color = '#ec4899';
+        if (ticketBox) {
+          ticketBox.style.borderColor = 'rgba(236, 72, 153, 0.5)';
+          ticketBox.style.background = 'rgba(236, 72, 153, 0.08)';
+        }
+        nar.innerHTML = '<strong>Stage 2/3 (Authorization):</strong> Identity confirmed! Lady RADIUS issues a Kerberos Ticket-Granting Ticket (TGT). No need to re-enter passwords across the LAN.';
+        playTone(720, 0.08);
+      } else {
+        if (b3) b3.classList.add('active');
+        badge.innerText = 'SESSION LOGGED: TAB ACTIVE';
+        badge.style.color = '#10b981';
+        meta.innerText = 'ACCOUNTING STARTED // BANDWIDTH COUNTER: 0.00 KB';
+        status.innerText = 'ROPE LIFTED // VIP';
+        status.style.color = '#10b981';
+        port.innerText = '1813/UDP';
+        port.style.color = '#10b981';
+        proto.innerText = 'RADIUS ACCT';
+        proto.style.color = '#10b981';
+        if (ticketBox) {
+          ticketBox.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+          ticketBox.style.background = 'rgba(16, 185, 129, 0.08)';
+        }
+        nar.innerHTML = '<strong>Stage 3/3 (Accounting):</strong> Lady RADIUS clicks her stopwatch. The session timer starts. Velvet rope lifts—Aguslavski enters the intranet sanctuary!';
+        playTone(980, 0.12);
+      }
+    }
+
+    // Scroll tracking
+    window.addEventListener('scroll', () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(100, Math.max(0, (window.scrollY / (docHeight > 0 ? docHeight : 1)) * 100));
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Scroll-pin velvet rope
+      const trigger = document.getElementById('radiusTrigger');
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const triggerHeight = trigger.offsetHeight;
+      const viewH = window.innerHeight;
+
+      // Check if wrapper is in the active scroll viewport
+      if (rect.top <= 100 && rect.bottom >= 150) {
+        const scrolled = Math.max(0, 100 - rect.top);
+        const maxScroll = Math.max(1, triggerHeight - viewH * 0.7);
+        const p = Math.min(1, Math.max(0, scrolled / maxScroll));
+
+        if (p < 0.33 && currentRadiusStage !== 1) {
+          setRadiusStage(1);
+        } else if (p >= 0.33 && p < 0.68 && currentRadiusStage !== 2) {
+          setRadiusStage(2);
+        } else if (p >= 0.68 && currentRadiusStage !== 3) {
+          setRadiusStage(3);
+        }
+      }
+    });
+
+    function handleTerm(e) {
+      if (e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if (val) {
+          runCmd(val);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function runCmd(cmd) {
+      playTone(580, 0.05, 'square');
+      const out = document.getElementById('termOut');
+      const row = document.createElement('div');
+      row.className = 'log';
+      row.innerHTML = `<span style="color:var(--accent-magenta);">&gt; ${cmd}</span>`;
+      out.appendChild(row);
+
+      const res = document.createElement('div');
+      res.className = 'log';
+      const low = cmd.toLowerCase().trim();
+
+      if (low === 'audit-radius') {
+        res.innerHTML = `
+          [RADIUS SERVICE STATUS: PORT 1812/1813 UDP]<br>
+          * Authentication Pool: ONLINE<br>
+          * Accounting Ledger: 1 Active Session (User: Aguslavski)<br>
+          * Packet Protection: Password MD5 Hashed (Cleartext Attributes Alert)
+        `;
+      } else if (low === 'tacacs-failover') {
+        res.innerHTML = `
+          <span style="color:var(--accent-purple);">[TACACS+ CISCO PROTOCOL ENGAGED]</span><br>
+          * Port: 49 TCP (Full Packet Payload Encryption Active)<br>
+          * Separation Mode: AAA Fully Decoupled<br>
+          * Device Admin: Treasury Knight granted Level 15 Enable Privileges.
+        `;
+      } else if (low === 'inspect-glitch') {
+        res.innerHTML = `
+          <span style="color:var(--accent-red);">[RED TEAM DOSSIER: GLITCH]</span><br>
+          * Type: Orphaned ICMP Echo Request (Ping)<br>
+          * Vector: Volumetric Botnet Inundation<br>
+          * Containment: Isolated to Quarantine VLAN 999. Rate-limiting active.
+        `;
+      } else if (low === 'kerberos-tgt') {
+        res.innerHTML = `
+          [KERBEROS KDC TICKETING RECORD]<br>
+          * Principal: aguslavski@FOYTA.LOCAL<br>
+          * Ticket Lifetime: 10 hrs 00 mins<br>
+          * Encryption: AES-256-CTS-HMAC-SHA1-96<br>
+          * Status: VALID // SINGLE SIGN-ON GRANTED
+        `;
+      } else if (low === 'help') {
+        res.innerHTML = `
+          Available Episode 2 diagnostics:<br>
+          - <code>audit-radius</code>: Inspect Lady RADIUS ledger &amp; ports<br>
+          - <code>tacacs-failover</code>: Engage TACACS+ encrypted admin channel<br>
+          - <code>inspect-glitch</code>: View threat intelligence on the rogue ping<br>
+          - <code>kerberos-tgt</code>: Check Single Sign-On ticket attributes<br>
+          - <code>clear</code>: Flush console
+        `;
+      } else if (low === 'clear') {
+        out.innerHTML = '';
+        return;
+      } else {
+        res.innerHTML = `<span style="color:var(--accent-red);">Unknown command: '${cmd}'. Type 'help'.</span>`;
+      }
+
+      out.appendChild(res);
+      out.scrollTop = out.scrollHeight;
+    }
+  
+    function saveEpProgress() {
+      try {
+        const stored = localStorage.getItem('handshake_completed_episodes');
+        const list = stored ? JSON.parse(stored) : [];
+        if (!list.includes(2)) {
+          list.push(2);
+          localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+        }
+      } catch(e) {}
+    }
+    
+  </script>
+</body>
+</html>

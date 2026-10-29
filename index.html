@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Handshake Saga | Master Mission Command Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fira+Code:wght@400;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #03050c;
+      --bg-panel: #070d1e;
+      --bg-card: #0d162e;
+      --border-glow: #1a2a50;
+      --accent-cyan: #00f0ff;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #a855f7;
+      --accent-gold: #fbbf24;
+      --accent-magenta: #ec4899;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --comic-font: 'Bangers', cursive, sans-serif;
+      --code-font: 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Fixed Top HUD */
+    .hud-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: rgba(3, 5, 12, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 1000;
+    }
+
+    .brand-tag {
+      font-family: var(--code-font);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand-tag span {
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid var(--accent-gold);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      color: var(--accent-gold);
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hud-btn {
+      background: #0d162e;
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--code-font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .hud-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .hud-btn.active { border-color: var(--accent-green); color: var(--accent-green); box-shadow: 0 0 12px rgba(16, 185, 129, 0.25); }
+
+    .main-wrapper {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 90px 1.25rem 5rem;
+    }
+
+    /* Hero Banner */
+    .hero-panel {
+      position: relative;
+      background: linear-gradient(135deg, #070d22 0%, #0c1838 100%);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 16px;
+      padding: 2.25rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 0 45px rgba(0, 240, 255, 0.15);
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .hero-title {
+      font-family: var(--comic-font);
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      margin: 0.5rem 0;
+    }
+
+    .hero-title span.neon-cyan {
+      color: var(--accent-cyan);
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    }
+    .hero-title span.neon-gold {
+      color: var(--accent-gold);
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    }
+
+    .hero-desc {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-family: var(--code-font);
+      font-size: 0.8rem;
+    }
+
+    .stat-pill strong { color: var(--accent-cyan); }
+
+    /* Animated SVG Radar/Topology in Hero */
+    .hero-svg-box {
+      width: 100%;
+      height: 220px;
+      background: rgba(3, 5, 14, 0.6);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Filters & Controls */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-glow);
+      color: var(--text-dim);
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      background: rgba(0, 240, 255, 0.1);
+    }
+
+    .clear-progress-btn {
+      color: var(--accent-red);
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.06);
+    }
+    .clear-progress-btn:hover {
+      border-color: var(--accent-red);
+      color: #fff;
+      background: var(--accent-red);
+    }
+
+    /* Episodes Grid */
+    .episodes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .ep-card {
+      background: var(--bg-panel);
+      border: 2px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 1.5rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    .ep-card:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(0, 240, 255, 0.15);
+    }
+
+    .ep-card.completed {
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+    .ep-card.completed::after {
+      content: "✓ COMPLETED";
+      position: absolute;
+      top: -10px;
+      right: 1.25rem;
+      background: var(--accent-green);
+      color: #000;
+      font-family: var(--code-font);
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .ep-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .ep-number {
+      font-family: var(--code-font);
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .ep-domain-badge {
+      font-family: var(--code-font);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .ep-title {
+      font-family: var(--comic-font);
+      font-size: 1.45rem;
+      line-height: 1.15;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .ep-tech {
+      font-family: var(--code-font);
+      font-size: 0.78rem;
+      color: var(--accent-cyan);
+      margin-bottom: 1rem;
+      min-height: 38px;
+    }
+
+    .ep-desc {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 1.25rem;
+      line-height: 1.45;
+    }
+
+    .ep-launch-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      background: #0d162e;
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-family: var(--code-font);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.65rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .ep-launch-btn:hover {
+      background: var(--accent-cyan);
+      color: #000;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    }
+
+    .ep-card.completed .ep-launch-btn {
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+    .ep-card.completed .ep-launch-btn:hover {
+      background: var(--accent-green);
+      color: #000;
+    }
+
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .episodes-grid { grid-template-columns: 1fr; }
+      .main-wrapper { padding-left: 1rem; padding-right: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="hud-bar">
+    <div class="brand-tag">
+      <span>COMMAND HUB</span> THE HANDSHAKE SAGA // MASTER INDEX
+    </div>
+    <div class="hud-controls">
+      <button class="hud-btn" id="soundToggle" onclick="toggleAudio()">
+        <span id="soundIcon">🔇</span> SFX: <span id="soundState">OFF</span>
+      </button>
+      <button class="hud-btn clear-progress-btn" onclick="resetProgress()">
+        ↺ RESET PROGRESS
+      </button>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!-- Hero Panel -->
+    <section class="hero-panel">
+      <div class="hero-grid">
+        <div>
+          <div style="font-family: var(--code-font); font-size: 0.8rem; color: var(--accent-cyan); font-weight:700;">
+            // SCROLLYTELLING GRAPHIC NOVEL SERIES • 11 STANDALONE MODULES
+          </div>
+          <h1 class="hero-title">
+            THE <span class="neon-cyan">HANDSHAKE</span> <span class="neon-gold">SAGA</span>
+          </h1>
+          <p class="hero-desc">
+            Journey inside the digital wire alongside lead packet <strong>Aguslavski</strong> and security officer <strong>Treasury Knight</strong>. From bare-metal encapsulation and biometric mantraps to quantum lattice cryptography and 400G InfiniBand neural supercomputing.
+          </p>
+          <div class="hero-stats">
+            <div class="stat-pill">PROGRESS: <strong id="progressCount">0 / 11</strong> COMPLETED</div>
+            <div class="stat-pill">CLEARANCE: <strong id="clearanceLevel">SC / CTC ACTIVE</strong></div>
+            <div class="stat-pill">SYLLABUS: <strong>CCNA • SEC+ • CySA+</strong></div>
+          </div>
+        </div>
+
+        <div class="hero-svg-box">
+          <svg width="100%" height="100%" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="cyberGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#ec4899" stop-opacity="0.8"/>
+              </linearGradient>
+            </defs>
+            <!-- Background Grid -->
+            <path d="M 0,50 L 320,50 M 0,100 L 320,100 M 0,150 L 320,150" stroke="#112040" stroke-width="1"/>
+            <path d="M 80,0 L 80,200 M 160,0 L 160,200 M 240,0 L 240,200" stroke="#112040" stroke-width="1"/>
+            
+            <!-- Central Radar Pulse -->
+            <circle cx="160" cy="100" r="70" fill="none" stroke="#00f0ff" stroke-width="1" stroke-dasharray="4,4" opacity="0.4">
+              <animateTransform attributeName="transform" type="rotate" from="0 160 100" to="360 160 100" dur="20s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="160" cy="100" r="45" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="160" cy="100" r="20" fill="rgba(0, 240, 255, 0.15)" stroke="#00f0ff" stroke-width="2"/>
+
+            <!-- Orbiting Data Nodes -->
+            <circle cx="160" cy="30" r="5" fill="#00f0ff">
+              <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="270" cy="100" r="5" fill="#10b981">
+              <animate attributeName="opacity" values="1;0.3;1" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="160" cy="170" r="5" fill="#ec4899">
+              <animate attributeName="opacity" values="0.4;1;0.4" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="50" cy="100" r="5" fill="#fbbf24">
+              <animate attributeName="opacity" values="1;0.4;1" dur="2.2s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Connecting Optical Traces -->
+            <path d="M 50,100 Q 100,50 160,30 T 270,100 T 160,170 Z" fill="none" stroke="url(#cyberGlow)" stroke-width="2" stroke-dasharray="6,4">
+              <animate attributeName="stroke-dashoffset" values="0;100" dur="8s" repeatCount="indefinite"/>
+            </path>
+
+            <text x="160" y="105" fill="#f8fafc" font-family="'Fira Code', monospace" font-size="9" font-weight="700" text-anchor="middle">400G FABRIC</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Header -->
+    <div class="filter-bar">
+      <div class="filter-chips">
+        <button class="filter-btn active" onclick="filterEpisodes('all')">ALL (11)</button>
+        <button class="filter-btn" onclick="filterEpisodes('network')">NETWORKING</button>
+        <button class="filter-btn" onclick="filterEpisodes('security')">SECURITY &amp; AAA</button>
+        <button class="filter-btn" onclick="filterEpisodes('cloud')">CLOUD &amp; HPC</button>
+        <button class="filter-btn" onclick="filterEpisodes('advanced')">QUANTUM &amp; AI</button>
+      </div>
+    </div>
+
+    <!-- Episodes Grid -->
+    <div class="episodes-grid" id="episodesGrid">
+      <!-- Generated via JS -->
+    </div>
+
+  </main>
+
+  <script>
+    let audioCtx = null;
+    let sfx = false;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playTone(freq, dur, type = 'sine') {
+      if (!sfx) return;
+      initAudio();
+      try {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    function toggleAudio() {
+      sfx = !sfx;
+      const btn = document.getElementById('soundToggle');
+      const state = document.getElementById('soundState');
+      const icon = document.getElementById('soundIcon');
+      if (sfx) {
+        btn.classList.add('active');
+        state.innerText = 'ON';
+        icon.innerText = '🔊';
+        initAudio();
+        playTone(1040, 0.15, 'triangle');
+      } else {
+        btn.classList.remove('active');
+        state.innerText = 'OFF';
+        icon.innerText = '🔇';
+      }
+    }
+
+    const episodes = [
+      {
+        num: 1,
+        title: "The Encapsulation Protocol",
+        file: "handshake_saga_episode_1.html",
+        category: "network",
+        domain: "DOMAIN 1.0 // OSI 7-LAYER ARMORY",
+        tech: "L7 Data → L4 Segment → L3 Packet → L2 Frame → L1 Bits",
+        desc: "Aguslavski equips TCP header armor, IP addressing, and MAC tracking tags before jumping down the copper conduit."
+      },
+      {
+        num: 2,
+        title: "The Intranet Lounge & The Rogue Ping",
+        file: "handshake_saga_episode_2.html",
+        category: "security",
+        domain: "DOMAIN 4.0 // AAA ARCHITECTURE",
+        tech: "RADIUS (1812 UDP) vs TACACS+ (49 TCP) • Kerberos TGT",
+        desc: "Lady RADIUS guards the VIP velvet rope, while Glitch the ICMP ping attempts to cut the authentication wire."
+      },
+      {
+        num: 3,
+        title: "The Gateway Underworld & The Forger",
+        file: "handshake_saga_episode_3.html",
+        category: "network",
+        domain: "DOMAIN 1.0 & 2.0 // RFC 1918 & NAT/PAT",
+        tech: "PAT Translation Table • Port 23 Telnet Cleartext • VoIP QoS",
+        desc: "Private RFC 1918 addresses get dropped on the WAN! The Forger creates a public disguise while The Diva demands VoIP Expedited Forwarding."
+      },
+      {
+        num: 4,
+        title: "The Great Sequencing & Missing Byte",
+        file: "handshake_saga_episode_4.html",
+        category: "network",
+        domain: "DOMAIN 1.0 & 3.0 // TCP FLOW CONTROL",
+        tech: "MTU 1500 • Head-of-Line Blocking • RFC 2018 SACK",
+        desc: "A tidal wave of 3.5 million packet clones invades destination RAM! Packet #5 goes missing until Treasury Knight fires the SACK flare."
+      },
+      {
+        num: 5,
+        title: "The Physical Fortress & Mantrap",
+        file: "handshake_saga_episode_5.html",
+        category: "security",
+        domain: "SECURITY+ // PHYSICAL LAYER DEFENSE",
+        tech: "Two-Door Interlock Mantrap • Biometrics • Inergen Fire BMS",
+        desc: "Perimeter vibration tripwires, anti-tailgating airlocks, and clean-agent gas suppression protect bare-metal silicon from physical breach."
+      },
+      {
+        num: 6,
+        title: "The Audit, The APT & The Honeypot",
+        file: "handshake_saga_episode_6.html",
+        category: "security",
+        domain: "CYSA+ // INCIDENT REMEDIATION",
+        tech: "SOW / ROE Paperwork • APT Living-off-the-Land • SMB 445 Honeynet",
+        desc: "Hunter the White Hat pentester sits inside the database cage, deploying an SMB decoy share to snare stealth adversary Zero."
+      },
+      {
+        num: 7,
+        title: "The Meltdown & Cloud Migration",
+        file: "handshake_saga_episode_7.html",
+        category: "cloud",
+        domain: "CLOUD+ & NETWORK+ // HIGH AVAILABILITY",
+        tech: "P2V Image Extraction • VMware vMotion • Docker & Kubernetes",
+        desc: "Physical servers melt into white-hot slag! Aguslavski sheds his bare-metal shell, ascending into an orchestrated geo-redundant container pod."
+      },
+      {
+        num: 8,
+        title: "The Evil Twin & AR Sandbox",
+        file: "handshake_saga_episode_8.html",
+        category: "security",
+        domain: "SECURITY+ // WIRELESS ATTACKS",
+        tech: "Rogue AP SSID Spoofing • Safe Mode Wireframe • WPA3 SAE & PMF",
+        desc: "An attacker in a rusty van broadcasts a fake cafe Wi-Fi beacon into user AR glasses! Aguslavski strips the CSS to reveal the raw trap."
+      },
+      {
+        num: 9,
+        title: "The Quantum Apocalypse & Lattice",
+        file: "handshake_saga_episode_9.html",
+        category: "advanced",
+        domain: "PQC // POST-QUANTUM CRYPTOGRAPHY",
+        tech: "Shor's Algorithm vs RSA-2048 • ML-KEM CRYSTALS-Kyber • QKD",
+        desc: "The Q-Bit shatters classical 2048-bit prime factorization in 3 seconds! Aguslavski weaves high-dimensional Module-LWE geometric shields."
+      },
+      {
+        num: 10,
+        title: "The Neural Link & The Black Box",
+        file: "handshake_saga_episode_10.html",
+        category: "advanced",
+        domain: "AI GOVERNANCE // HPC SUPERCOMPUTING",
+        tech: "400G InfiniBand • RDMA Zero-Copy • Explainable AI (XAI) Saliency",
+        desc: "The hungry 700W GPU devours parameter shards! When black-box bias denies a loan over Comic Sans font, The Whisperer audits the weights."
+      },
+      {
+        num: 11,
+        title: "The World Wide Wire Tour (Finale)",
+        file: "handshake_saga_episode_11.html",
+        category: "network",
+        domain: "GLOBAL BACKBONE // PLANETARY INFRASTRUCTURE",
+        tech: "MAREA Subsea DWDM • Tokyo Edge CDN • Starlink LEO • BGP Peering",
+        desc: "The planetary stadium tour! Surfing Atlantic seabed fiber, caching at the Tokyo edge, beaming to orbit, and returning home to Localhost 127.0.0.1."
+      }
+    ];
+
+    function getCompletedList() {
+      const stored = localStorage.getItem('handshake_completed_episodes');
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function markComplete(num) {
+      const list = getCompletedList();
+      if (!list.includes(num)) {
+        list.push(num);
+        localStorage.setItem('handshake_completed_episodes', JSON.stringify(list));
+      }
+      renderHub();
+    }
+
+    function resetProgress() {
+      if (confirm("Reset mission progress across all 11 episodes?")) {
+        localStorage.removeItem('handshake_completed_episodes');
+        playTone(320, 0.2, 'sawtooth');
+        renderHub();
+      }
+    }
+
+    let activeFilter = 'all';
+    function filterEpisodes(cat) {
+      activeFilter = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      playTone(600, 0.04);
+      renderHub();
+    }
+
+    function renderHub() {
+      const grid = document.getElementById('episodesGrid');
+      grid.innerHTML = '';
+      const completed = getCompletedList();
+      document.getElementById('progressCount').innerText = `${completed.length} / 11`;
+
+      const filtered = activeFilter === 'all' 
+        ? episodes 
+        : episodes.filter(e => e.category === activeFilter);
+
+      filtered.forEach(ep => {
+        const isDone = completed.includes(ep.num);
+        const card = document.createElement('div');
+        card.className = `ep-card ${isDone ? 'completed' : ''}`;
+        card.innerHTML = `
+          <div>
+            <div class="ep-header">
+              <span class="ep-number">EPISODE ${ep.num}</span>
+              <span class="ep-domain-badge">${ep.domain}</span>
+            </div>
+            <h2 class="ep-title">${ep.title}</h2>
+            <div class="ep-tech">${ep.tech}</div>
+            <p class="ep-desc">${ep.desc}</p>
+          </div>
+          <a href="${ep.file}" class="ep-launch-btn" onclick="playTone(880, 0.1)">
+            ${isDone ? 'REPLAY MISSION →' : 'LAUNCH MISSION →'}
+          </a>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Auto mark completion if coming back from an episode via hash or parameter
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const completedParam = params.get('completed');
+      if (completedParam) {
+        markComplete(parseInt(completedParam, 10));
+      }
+      renderHub();
+    });
+  </script>
+</body>
+</html>
